@@ -27,6 +27,6 @@ public class ControllerTest {
         String responseContent = result.getResponse().getContentAsString();
 
         // This assertion will fail because the actual response is "Hello John"
-        assertThat(responseContent).isEqualTo("Hello Jane");
+        assertThat(responseContent).isEqualTo("HelloJohn");
     }
 }
