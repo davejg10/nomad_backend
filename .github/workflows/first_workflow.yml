@@ -5,8 +5,6 @@ on:
   workflow_dispatch:
   pull_request:
     branches: [ "main" ]
-    paths:
-      - 'Application/**'
 
 jobs:
   ci-unit-testing:
@@ -21,12 +19,18 @@ jobs:
           distribution: 'oracle'
           cache: maven
 
-      - name: Build with Maven
+      - name: Maven Verify
         run: mvn clean verify
 
       - name: Archive test results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: test-results
           path: target/surefire-reports
+
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@v5
+        if: always()
+        with:
+          report_paths: '**/build/test-results/test/TEST-*.xml'
