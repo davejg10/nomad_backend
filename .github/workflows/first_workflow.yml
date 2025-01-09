@@ -12,11 +12,29 @@ env:
   JAR_VERSION: 0.0.1-SNAPSHOT
   AZURE_WEBAPP_PACKAGE_PATH: ${{ github.workspace }}
   PUBLISH_PROFILE: ${{ secrets.AZURE_WEB_APP_PUBLISH_PROFILE }}
+  REGISTRY_NAME: acrdevuksnomad01.azurecr.io
+  REPOSITORY_NAME: nomad/wth
+  TAG: ${{ github.run_number }}
 
 permissions:
   id-token: write
 
 jobs:
+  dockerize:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Docker login
+        run: docker login ${{ env.REGISTRY_NAME }} -u ${{ secrets.ACR_USERNAME }} -p ${{ secrets.ACR_PASSWORD }}
+
+      - name: Docker build
+        run: docker build -t ${{ env.REGISTRY_NAME }}/${{ env.REPOSITORY_NAME }}:${{ env.TAG }} --build-arg build_version=${{ env.TAG }}
+
+      - name: Docker push
+        run: docker push ${{ env.REGISTRY_NAME }}/${{ env.REPOSITORY_NAME }}:${{ env.TAG }}
+
   deploy_to_web_app:
     strategy:
       matrix:
@@ -45,9 +63,8 @@ jobs:
 #           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
        - name: Azure WebApp
-         uses: Azure/webapps-deploy@v3
+         uses: Azure/webapps-deploy@v2
          with:
            app-name: web-${{ matrix.environment }}-uks-nomad-01
            publish-profile: ${{ env.PUBLISH_PROFILE }}
-           package: '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/target/${{ env.ARTIFACT_ID }}-${{ env.JAR_VERSION }}.jar'
-           type: JAR
+           images: '${{ env.REGISTRY_NAME }}/${{ env.REPOSITORY_NAME }}:${{ env.TAG }}'
