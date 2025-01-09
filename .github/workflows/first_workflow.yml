@@ -22,6 +22,10 @@ permissions:
 jobs:
   dockerize:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        environment: [ dev ]
+    environment: ${{ matrix.environment }}
     steps:
       - uses: actions/checkout@v4
 
@@ -35,10 +39,11 @@ jobs:
         run: docker push ${{ env.REGISTRY_NAME }}/${{ env.REPOSITORY_NAME }}:${{ env.TAG }}
 
   deploy_to_web_app:
+    needs: dockerize
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         environment: [ dev ]
-    runs-on: ubuntu-latest
     environment: ${{ matrix.environment }}
     steps:
        - uses: actions/checkout@v4
