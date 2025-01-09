@@ -61,6 +61,10 @@ jobs:
 #           tenant-id: ${{ vars.AZURE_TENANT_ID }}
 #           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
+
+#        Get publish profile and convert to xml
+#        az webapp deployment list-publishing-profiles --name web-dev-uks-nomad-01 --resource-group rg-dev-uks-nomad-01
+
        - name: Azure WebApp
          uses: Azure/webapps-deploy@v2
          with:
