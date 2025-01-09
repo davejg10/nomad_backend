@@ -11,6 +11,9 @@ env:
   ARTIFACT_ID: backend
   JAR_VERSION: 0.0.1-SNAPSHOT
 
+permissions:
+  id-token: write
+
 jobs:
   deploy_to_web_app:
     strategy:
