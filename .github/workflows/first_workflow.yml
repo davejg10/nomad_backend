@@ -8,12 +8,10 @@ on:
       - main
 
 env:
-  ARTIFACT_ID: backend
-  JAR_VERSION: 0.0.1-SNAPSHOT
-  AZURE_WEBAPP_PACKAGE_PATH: ${{ github.workspace }}
   PUBLISH_PROFILE: ${{ secrets.AZURE_WEB_APP_PUBLISH_PROFILE }}
-  REGISTRY_NAME: acrdevuksnomad01.azurecr.io
-  REPOSITORY_NAME: nomad/wth
+  ACR_NAME: acrdevuksnomad01
+  ACR_SERVER_NAME: ${{ env.ACR_NAME }}.azurecr.io
+  REPOSITORY_NAME: nomad
   TAG: ${{ github.run_number }}
 
 permissions:
@@ -22,9 +20,6 @@ permissions:
 jobs:
   dockerize:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        environment: [ dev ]
     environment: ${{ matrix.environment }}
     steps:
       - uses: actions/checkout@v4
@@ -37,37 +32,49 @@ jobs:
       - name: Build with Maven
         run: mvn -B package --file pom.xml
 
-      - name: Docker login
-        run: docker login ${{ env.REGISTRY_NAME }} -u ${{ secrets.ACR_USERNAME }} -p ${{ secrets.ACR_PASSWORD }}
+      - name: Azure CLI Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: ACR login
+        run: az acr login --name ${{ env.ACR_NAME }}
 
       - name: Docker build
-        run: docker build -t ${{ env.REGISTRY_NAME }}/${{ env.REPOSITORY_NAME }}:${{ env.TAG }} --build-arg build_version=${{ env.TAG }} .
+        run: docker build -t ${{ env.ACR_SERVER_NAME }}/${{ env.REPOSITORY_NAME }}:${{ env.TAG }} --build-arg build_version=${{ env.TAG }} .
 
       - name: Docker push
-        run: docker push ${{ env.REGISTRY_NAME }}/${{ env.REPOSITORY_NAME }}:${{ env.TAG }}
+        run: docker push ${{ env.ACR_SERVER_NAME }}/${{ env.REPOSITORY_NAME }}:${{ env.TAG }}
 
-  deploy_to_web_app:
-    needs: dockerize
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        environment: [ dev ]
-    environment: ${{ matrix.environment }}
-    steps:
+#  deploy_to_web_app:
+#    needs: dockerize
+#    runs-on: ubuntu-latest
+#    strategy:
+#      matrix:
+#        environment: [ dev ]
+#    environment: ${{ matrix.environment }}
+#    env:
+#      WEB_APP_NAME: web-${{ matrix.environment }}-uks-nomad-01
+#      WEB_APP_RG_NAME: rg-${{ matrix.environment }}-uks-nomad-01
+#    steps:
 #       - name: Azure CLI Login
 #         uses: azure/login@v2
 #         with:
 #           client-id: ${{ secrets.AZURE_CLIENT_ID }}
 #           tenant-id: ${{ vars.AZURE_TENANT_ID }}
 #           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-
-
-#        Get publish profile and convert to xml
-#        az webapp deployment list-publishing-profiles --name web-dev-uks-nomad-01 --resource-group rg-dev-uks-nomad-01
-
-       - name: Azure WebApp
-         uses: Azure/webapps-deploy@v2
-         with:
-           app-name: web-${{ matrix.environment }}-uks-nomad-01
-           publish-profile: ${{ env.PUBLISH_PROFILE }}
-           images: '${{ env.REGISTRY_NAME }}/${{ env.REPOSITORY_NAME }}:${{ env.TAG }}'
+#
+#       - name: Fetch web-app publish-profile
+#         run: |
+#           az webapp deployment list-publishing-profiles --name ${{ env.WEB_APP_NAME }} --resource-group ${{ env.WEB_APP_RG_NAME }}
+#
+#
+#
+#       - name: Azure WebApp
+#         uses: Azure/webapps-deploy@v2
+#         with:
+#           app-name: web-${{ matrix.environment }}-uks-nomad-01
+#           publish-profile: ${{ env.PUBLISH_PROFILE }}
+#           images: '${{ env.ACR_SERVER_NAME }}/${{ env.REPOSITORY_NAME }}:${{ env.TAG }}'
