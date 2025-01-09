@@ -50,3 +50,4 @@ jobs:
            app-name: web-${{ matrix.environment }}-uks-nomad-01
            publish-profile: ${{ env.PUBLISH_PROFILE }}
            package: '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/target/${{ env.ARTIFACT_ID }}-${{ env.JAR_VERSION }}.jar'
+           type: JAR
