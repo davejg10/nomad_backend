@@ -20,7 +20,7 @@ permissions:
 jobs:
   dockerize:
     runs-on: ubuntu-latest
-    environment: ${{ matrix.environment }}
+    environment: dev
     steps:
       - uses: actions/checkout@v4
 
@@ -68,7 +68,7 @@ jobs:
 #
 #       - name: Fetch web-app publish-profile
 #         run: |
-#           az webapp deployment list-publishing-profiles --name ${{ env.WEB_APP_NAME }} --resource-group ${{ env.WEB_APP_RG_NAME }}
+#           PUBLISH_PROFILE_JSON=$(az webapp deployment list-publishing-profiles --name ${{ env.WEB_APP_NAME }} --resource-group ${{ env.WEB_APP_RG_NAME }} --query "[0]")
 #
 #
 #
