@@ -10,7 +10,8 @@ on:
 env:
   ARTIFACT_ID: backend
   JAR_VERSION: 0.0.1-SNAPSHOT
-  PUBLISH_PROFILE: ${{ secrets.PUBLISH_PROFILE }}
+  AZURE_WEBAPP_PACKAGE_PATH: ${{ github.workspace }}
+  PUBLISH_PROFILE: ${{ secrets.AZURE_WEB_APP_PUBLISH_PROFILE }}
 
 permissions:
   id-token: write
@@ -48,4 +49,4 @@ jobs:
          with:
            app-name: web-${{ matrix.environment }}-uks-nomad-01
            publish-profile: ${{ env.PUBLISH_PROFILE }}
-           package: ${{ github.workspace }}/target/${{ env.ARTIFACT_ID }}-${{ env.JAR_VERSION }}.jar
+           package: '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/target/${{ env.ARTIFACT_ID }}-${{ env.JAR_VERSION }}.jar'
