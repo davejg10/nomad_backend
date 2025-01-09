@@ -37,15 +37,15 @@ jobs:
        - name: List
          run: ls ${{ github.workspace }}/target/
 
-       - name: Azure CLI Login
-         uses: azure/login@v2
-         with:
-           client-id: ${{ secrets.AZURE_CLIENT_ID }}
-           tenant-id: ${{ vars.AZURE_TENANT_ID }}
-           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+#       - name: Azure CLI Login
+#         uses: azure/login@v2
+#         with:
+#           client-id: ${{ secrets.AZURE_CLIENT_ID }}
+#           tenant-id: ${{ vars.AZURE_TENANT_ID }}
+#           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
        - name: Azure WebApp
-         uses: Azure/webapps-deploy@v2
+         uses: Azure/webapps-deploy@v3
          with:
            app-name: web-${{ matrix.environment }}-uks-nomad-01
            publish-profile: ${{ env.PUBLISH_PROFILE }}
