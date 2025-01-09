@@ -43,4 +43,4 @@ jobs:
          uses: Azure/webapps-deploy@v3
          with:
            app-name: web-${{ matrix.environment }}-uks-nomad-01
-           package: target/${{ env.ARTIFACT_ID }}-${{ env.JAR_VERSION }}.jar
+           package: ${{ github.workspace }}/target/${{ env.ARTIFACT_ID }}-${{ env.JAR_VERSION }}.jar
