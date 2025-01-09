@@ -44,7 +44,7 @@ jobs:
            subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
        - name: Azure WebApp
-         uses: Azure/webapps-deploy@v3
+         uses: Azure/webapps-deploy@v2
          with:
            app-name: web-${{ matrix.environment }}-uks-nomad-01
            publish-profile: ${{ env.PUBLISH_PROFILE }}
