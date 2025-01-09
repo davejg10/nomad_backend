@@ -10,7 +10,7 @@ on:
 env:
   PUBLISH_PROFILE: ${{ secrets.AZURE_WEB_APP_PUBLISH_PROFILE }}
   ACR_NAME: acrdevuksnomad01
-  ACR_SERVER_NAME: ${{ env.ACR_NAME }}.azurecr.io
+  ACR_SERVER_NAME: acrdevuksnomad01.azurecr.io
   REPOSITORY_NAME: nomad
   TAG: ${{ github.run_number }}
 
