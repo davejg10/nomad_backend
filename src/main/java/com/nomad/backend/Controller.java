@@ -9,6 +9,6 @@ public class Controller {
 
     @GetMapping("/helloworld")
     public String greeting(@RequestParam(value = "name", defaultValue = "World") String name) {
-        return "Hello Bethany Powell some other change test. Now a new change!";
+        return "Hello backend";
     }
 }

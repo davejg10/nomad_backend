@@ -43,7 +43,8 @@ jobs:
 
       - name: ACR build & push image
         run: |
-          az acr task run -r $ACR_NAME -n build_and_push_image --set image_name=${{ env.REPOSITORY_NAME }} --set image_tag=${{github.run_id}} --set dockerfile=Dockerfile -c .
+#          az acr task run -r $ACR_NAME -n build_and_push_image --set image_name=${{ env.REPOSITORY_NAME }} --set image_tag=${{ env.POM_VERSION_TAG }} --set dockerfile=Dockerfile -c .
+          az acr task run -r $ACR_NAME -n build_and_push_image --set image_name=${{ env.REPOSITORY_NAME }} --set dockerfile=Dockerfile -c .
 
 
   deploy_to_web_app:
@@ -75,4 +76,4 @@ jobs:
          with:
            app-name: web-${{ matrix.environment }}-uks-nomad-01
            publish-profile: ${{ env.PUBLISH_PROFILE }}
-           images: '${{ env.ACR_SERVER_NAME }}/${{ env.REPOSITORY_NAME }}:${{github.run_id}}'
+           images: '${{ env.ACR_SERVER_NAME }}/${{ env.REPOSITORY_NAME }}:${{ needs.dockerize.outputs.POM_VERSION_TAG }}'
