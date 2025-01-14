@@ -20,7 +20,7 @@ jobs:
     runs-on: self-hosted
     environment: dev
     outputs:
-      POM_VERSION_TAG: ${{ steps.pom_version.outputs.POM_VERSION }}
+      POM_VERSION_TAG: ${{ steps.pom_version.outputs.POM_VERSION_TAG }}
     steps:
       - uses: actions/checkout@v4
 
