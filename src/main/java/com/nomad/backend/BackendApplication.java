@@ -7,6 +7,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class BackendApplication {
 
 	public static void main(String[] args) {
+//		System.setProperty("applicationinsights.runtime-attach.configuration.classpath.file", "applicationinsights-dev.json");
+//		ApplicationInsights.attach();
+//		ConnectionString.configure("<Your Connection String>");
 		SpringApplication.run(BackendApplication.class, args);
 	}
 
