@@ -75,4 +75,4 @@ jobs:
            app-name: web-${{ matrix.environment }}-uks-nomad-01
            publish-profile: ${{ env.PUBLISH_PROFILE }}
            images: '${{ env.ACR_SERVER_NAME }}/${{ env.REPOSITORY_NAME }}:${{ needs.dockerize.outputs.POM_VERSION_TAG }}'
-           clean: true
+           restart: true
