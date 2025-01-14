@@ -45,7 +45,6 @@ jobs:
         run: |
           az acr task run -r $ACR_NAME -n build_and_push_image --set image_name=${{ env.REPOSITORY_NAME }} --set image_tag=${{ github.run_id }} --set dockerfile=Dockerfile -c .
 
-
   deploy_to_web_app:
     needs: dockerize
     runs-on: self-hosted
