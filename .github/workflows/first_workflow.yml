@@ -19,16 +19,19 @@ jobs:
   dockerize:
     runs-on: self-hosted
     environment: dev
+    outputs:
+      POM_VERSION_TAG: ${{ steps.pom_version.outputs.POM_VERSION }}
     steps:
       - uses: actions/checkout@v4
 
       - name: Fetch pom version tag
+        id: pom_version
         run: |
           POM_VERSION_TAG=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-          echo "POM_VERSION_TAG=$POM_VERSION_TAG" >> $GITHUB_ENV
+          echo "POM_VERSION_TAG=$POM_VERSION_TAG" >> $GITHUB_OUTPUT
+          echo "POM_VERSION_TAG=$POM_VERSION_TAG" >> GITHUB_ENV
 
       - name: Build with Maven
-        id: pom_version
         run: mvn -B package --file pom.xml
 
       - name: Azure CLI Login
@@ -71,4 +74,4 @@ jobs:
          with:
            app-name: web-${{ matrix.environment }}-uks-nomad-01
            publish-profile: ${{ env.PUBLISH_PROFILE }}
-           images: '${{ env.ACR_SERVER_NAME }}/${{ env.REPOSITORY_NAME }}:${{ needs.pom_version.outputs.POM_VERSION_TAG }}'
+           images: '${{ env.ACR_SERVER_NAME }}/${{ env.REPOSITORY_NAME }}:${{ needs.dockerize.outputs.POM_VERSION_TAG }}'
