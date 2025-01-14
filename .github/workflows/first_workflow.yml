@@ -11,7 +11,6 @@ env:
   ACR_NAME: acrglbuksdevopsutils
   ACR_SERVER_NAME: acrglbuksdevopsutils.azurecr.io
   REPOSITORY_NAME: nomad
-  TAG: ${{ github.run_number }}
 
 permissions:
   id-token: write
@@ -22,6 +21,9 @@ jobs:
     environment: dev
     steps:
       - uses: actions/checkout@v4
+
+      - name: Fetch pom version tag
+        run: mvn help:evaluate -Dexpression=project.version -q -DforceStdout
 
       - name: Build with Maven
         run: mvn -B package --file pom.xml
@@ -35,36 +37,35 @@ jobs:
 
       - name: ACR build & push image
         run: |
-          az acr task logs -r $ACR_NAME --run-id db11
-#          az acr task run -r $ACR_NAME -n build_and_push_image --set image_name=${{ env.REPOSITORY_NAME }} --set dockerfile=Dockerfile -c .
+#          az acr task run -r $ACR_NAME -n build_and_push_image --set image_name=${{ env.REPOSITORY_NAME }} image_tag=${{ env.pom_version_tag }} --set dockerfile=Dockerfile -c .
 
-  deploy_to_web_app:
-    needs: dockerize
-    runs-on: self-hosted
-    strategy:
-      matrix:
-        environment: [ dev ]
-    environment: ${{ matrix.environment }}
-    env:
-      WEB_APP_NAME: web-${{ matrix.environment }}-uks-nomad-01
-      WEB_APP_RG_NAME: rg-${{ matrix.environment }}-uks-nomad-01
-    steps:
-       - name: Azure CLI Login
-         uses: azure/login@v2
-         with:
-           client-id: ${{ secrets.AZURE_CLIENT_ID }}
-           tenant-id: ${{ vars.AZURE_TENANT_ID }}
-           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-
-       - name: Fetch web-app publish-profile
-         run: |
-           PUBLISH_PROFILE=$(az webapp deployment list-publishing-profiles --name ${{ env.WEB_APP_NAME }} --resource-group ${{ env.WEB_APP_RG_NAME }} --xml)
-           echo $PUBLISH_PROFILE
-           echo "PUBLISH_PROFILE=$PUBLISH_PROFILE" >> $GITHUB_ENV
-
-       - name: Azure WebApp
-         uses: Azure/webapps-deploy@v2
-         with:
-           app-name: web-${{ matrix.environment }}-uks-nomad-01
-           publish-profile: ${{ env.PUBLISH_PROFILE }}
-           images: '${{ env.ACR_SERVER_NAME }}/${{ env.REPOSITORY_NAME }}:${{ env.TAG }}'
+#  deploy_to_web_app:
+#    needs: dockerize
+#    runs-on: self-hosted
+#    strategy:
+#      matrix:
+#        environment: [ dev ]
+#    environment: ${{ matrix.environment }}
+#    env:
+#      WEB_APP_NAME: web-${{ matrix.environment }}-uks-nomad-01
+#      WEB_APP_RG_NAME: rg-${{ matrix.environment }}-uks-nomad-01
+#    steps:
+#       - name: Azure CLI Login
+#         uses: azure/login@v2
+#         with:
+#           client-id: ${{ secrets.AZURE_CLIENT_ID }}
+#           tenant-id: ${{ vars.AZURE_TENANT_ID }}
+#           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+#
+#       - name: Fetch web-app publish-profile
+#         run: |
+#           PUBLISH_PROFILE=$(az webapp deployment list-publishing-profiles --name ${{ env.WEB_APP_NAME }} --resource-group ${{ env.WEB_APP_RG_NAME }} --xml)
+#           echo $PUBLISH_PROFILE
+#           echo "PUBLISH_PROFILE=$PUBLISH_PROFILE" >> $GITHUB_ENV
+#
+#       - name: Azure WebApp
+#         uses: Azure/webapps-deploy@v2
+#         with:
+#           app-name: web-${{ matrix.environment }}-uks-nomad-01
+#           publish-profile: ${{ env.PUBLISH_PROFILE }}
+#           images: '${{ env.ACR_SERVER_NAME }}/${{ env.REPOSITORY_NAME }}:${{ env.TAG }}'
