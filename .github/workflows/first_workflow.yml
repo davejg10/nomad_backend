@@ -25,7 +25,7 @@ jobs:
       - name: Fetch pom version tag
         run: |
           POM_VERSION_TAG=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-          echo "POM_VERSION_TAG=POM_VERSION_TAG" >> $GITHUB_ENV
+          echo "POM_VERSION_TAG=$POM_VERSION_TAG" >> $GITHUB_ENV
 
       - name: Build with Maven
         id: pom_version
