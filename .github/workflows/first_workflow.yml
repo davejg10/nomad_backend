@@ -8,7 +8,6 @@ on:
       - main
 
 env:
-  ACR_NAME: acrglbuksdevopsutils
   ACR_SERVER_NAME: acrglbuksdevopsutils.azurecr.io
   REPOSITORY_NAME: nomad
 
@@ -43,7 +42,13 @@ jobs:
 
       - name: ACR build & push image
         run: |
-          az acr task run -r $ACR_NAME -n build_and_push_image --set image_name=${{ env.REPOSITORY_NAME }} --set image_tag=${{ github.run_id }} --set dockerfile=Dockerfile -c .
+          az acr build \
+            --registry ${{ env.ACR_SERVER_NAME }} \
+            --image "${{ env.REPOSITORY_NAME }}:${{ env.TAG }}" \
+            --build-arg build_version=${{ env.TAG }} .
+
+          # Also tag with latest
+          az acr import --name ${{ env.ACR_SERVER_NAME }} --source "${{ env.ACR_SERVER_NAME }}/${{ env.REPOSITORY_NAME }}:${{ env.TAG }}" --image ${{ env.REPOSITORY_NAME }}:latest --force
 
   deploy_to_web_app:
     needs: dockerize
@@ -72,6 +77,6 @@ jobs:
       - name: Azure WebApp
         uses: Azure/webapps-deploy@v3
         with:
-          app-name: web-${{ matrix.environment }}-uks-nomad-01
+          app-name: ${{ env.WEB_APP_NAME }}
           publish-profile: ${{ env.PUBLISH_PROFILE }}
           images: '${{ env.ACR_SERVER_NAME }}/${{ env.REPOSITORY_NAME }}:${{ github.run_id }}'
