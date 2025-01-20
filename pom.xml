@@ -55,14 +55,8 @@
 		</dependency>
 
 		<dependency>
-			<groupId>com.microsoft.azure</groupId>
-			<artifactId>applicationinsights-runtime-attach</artifactId>
-			<version>3.4.16</version>
-		</dependency>
-		<dependency>
-			<groupId>com.microsoft.azure</groupId>
-			<artifactId>applicationinsights-core</artifactId>
-			<version>3.6.2</version>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-neo4j</artifactId>
 		</dependency>
 	</dependencies>
 

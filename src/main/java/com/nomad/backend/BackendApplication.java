@@ -1,16 +1,23 @@
 package com.nomad.backend;
 
+import org.neo4j.cypherdsl.core.renderer.Configuration;
+import org.neo4j.cypherdsl.core.renderer.Dialect;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @SpringBootApplication
+@EnableTransactionManagement
 public class BackendApplication {
 
 	public static void main(String[] args) {
-//		System.setProperty("applicationinsights.runtime-attach.configuration.classpath.file", "applicationinsights-dev.json");
-//		ApplicationInsights.attach();
-//		ConnectionString.configure("<Your Connection String>");
 		SpringApplication.run(BackendApplication.class, args);
 	}
 
+	@Bean
+	Configuration cypherDslConfiguration() {
+		return Configuration.newConfig()
+				.withDialect(Dialect.NEO4J_5).build();
+	}
 }
