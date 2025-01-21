@@ -31,21 +31,26 @@ public interface CityRepository extends Neo4jRepository<City, String> {
             c.id = randomUUID()
         
         WITH c
-        OPTIONAL MATCH (c)-[r:ROUTE]->()
-        DELETE r
-        
-        WITH c
         UNWIND $routes AS routeData
+        
         MERGE (t:City {name: routeData.targetCityName})
         ON CREATE SET t.description = routeData.targetCityDescription,
             t.countryName = routeData.targetCityCountryName,
-            t.id = randomUUID()
-        MERGE (c)-[rel:ROUTE {
+            c.id = randomUUID()
+        
+        WITH c, t, routeData   
+        OPTIONAL MATCH (c)-[r:ROUTE {
+            transportType: routeData.transportType
+        }]->(t)
+        DELETE r
+        
+        CREATE (c)-[rel:ROUTE {
             popularity: routeData.popularity,
             weight: routeData.weight,
             transportType: routeData.transportType,
             id: randomUUID()
         }]->(t)
+        
         RETURN c, collect(rel), collect(t)
     """)
     City saveCityDepth0(Map<String, String> city, List<Map<String, String>> routes);

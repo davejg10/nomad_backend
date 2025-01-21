@@ -31,17 +31,17 @@ public class CityService {
         } else {
             log.warn("Cities routes are empty, no routes to sync");
         }
-        log.warn("About to fetch sync City with database city: " + city);
-
-
 
         Optional<City> syncedCity = cityRepository.findByNameReturnRoutes(city.getName());
         log.warn("Quieried findByNameReturnRoutes returned: " + syncedCity);
         if (syncedCity.isPresent()) {
             City existingCity = syncedCity.get();
+
+            log.warn("before the cull: " + existingCity.getRoutes());
             for (Route route : city.getRoutes()) {
                 existingCity = existingCity.addRoute(route);
             }
+            log.warn("after the cull: " + existingCity.getRoutes());
             Map<String, String> cityMap = Map.of(
                     "name", existingCity.getName(),
                     "description", existingCity.getDescription(),
@@ -57,8 +57,6 @@ public class CityService {
                             "transportType", route.getTransportType().toString()
                     ))
                     .collect(Collectors.toList());
-            log.warn("Saving the following to neo4j:");
-            log.warn(routeMaps);
             cityRepository.saveCityDepth0(cityMap, routeMaps);
         } else {
             log.info("City does not exist, adding city: " + city);
@@ -74,8 +72,8 @@ public class CityService {
                             "targetCityName", route.getTargetCity().getName(),
                             "targetCityDescription", route.getTargetCity().getDescription(),
                             "targetCityCountryName", route.getTargetCity().getCountryName(),
-                            "popularity", String.valueOf(route.getPopularity()),
-                            "weight", String.valueOf(route.getWeight()),
+                            "popularity", route.getPopularity(),
+                            "weight", route.getWeight(),
                             "transportType", route.getTransportType().toString()
                     ))
                     .collect(Collectors.toList());
@@ -85,8 +83,6 @@ public class CityService {
     }
 
     public City syncAllRoutes(City city) {
-
-
         log.warn("in syncAllRoutes with city: " + city);
 
         Set<String> targetCitiesToSync = city.getRoutes().stream()
@@ -113,7 +109,8 @@ public class CityService {
                         log.warn(targetCityName + " had null id therefore re-constructing route with id fetched from db, new route: " + syncedRoute);
                         continue;
                     }
-                    syncedRoutes.add(route);
+                    Route syncedRoute =  Route.of(route.getTargetCity().withId(String.valueOf(UUID.randomUUID())), route.getPopularity(), route.getWeight(), route.getTransportType());
+                    syncedRoutes.add(syncedRoute);
                 }
                 return City.of(city.getName(), city.getDescription(), city.getCountryName(), syncedRoutes);
 

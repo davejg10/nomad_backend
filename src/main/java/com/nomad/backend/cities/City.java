@@ -75,9 +75,9 @@ public class City {
                 log.warn("New route: " + routeToAdd);
                 return new City(this.id, this.name, this.description, this.countryName, existingRoutes);
             } else {
-                log.warn("Route exists already, doing nothing.....");
-                return this;
-            }
+                log.warn("Route exists already, removing route.....");
+                existingRoutes.remove(route);
+                return new City(this.id, this.name, this.description, this.countryName, existingRoutes);            }
         } else {
             existingRoutes.add(routeToAdd);
             log.info("Route does not existing, adding route...");

@@ -50,7 +50,7 @@ class LoadDatabase {
             );
 
 
-//            pai = pai.addRoute(phuket, 2, 1, TransportType.BUS);
+            pai = pai.addRoute(phuket, "2", "1", TransportType.BUS);
 
             bangkok = bangkok.addRoute(phuket, "2", "2", TransportType.BUS);
             phuket = phuket.addRoute(pai, "2", "1", TransportType.PLANE);
