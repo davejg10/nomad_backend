@@ -15,7 +15,7 @@ import java.util.Set;
 public class City {
 
     @Getter
-    @Id @GeneratedValue(UUIDStringGenerator.class)
+    @Id
     private final String id; // neo4j ids are strings
 
     @Getter
@@ -57,7 +57,7 @@ public class City {
         return addRoute(route.getTargetCity(), route.getPopularity(), route.getWeight(), route.getTransportType());
     }
 
-    public City addRoute(City targetCity, int popularity, int weight, TransportType transportType) {
+    public City addRoute(City targetCity, String popularity, String weight, TransportType transportType) {
         Set<Route> existingRoutes = getRoutes();
         Route routeToAdd = Route.of(targetCity, popularity, weight, transportType);
 
@@ -67,7 +67,7 @@ public class City {
 
         if (routeExists.isPresent()) {
             Route route = routeExists.get();
-            if (route.getPopularity() != popularity || route.getWeight() != weight) {
+            if (!Objects.equals(route.getPopularity(), popularity) || !Objects.equals(route.getWeight(), weight)) {
                 existingRoutes.remove(route);
                 existingRoutes.add(routeToAdd);
                 log.warn("Route with same transport type already exists but popularity or weight are different");

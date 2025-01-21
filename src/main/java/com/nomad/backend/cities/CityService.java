@@ -4,10 +4,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -22,6 +19,8 @@ public class CityService {
         this.cityRepository = cityRepository;
     }
 
+    record RouteDTO(String targetCityName, int popularity, int weight, TransportType transportType) {}
+
     public void createOrUpdateCity(City city) throws Exception {
 
         System.out.println();
@@ -32,6 +31,9 @@ public class CityService {
         } else {
             log.warn("Cities routes are empty, no routes to sync");
         }
+        log.warn("About to fetch sync City with database city: " + city);
+
+
 
         Optional<City> syncedCity = cityRepository.findByNameReturnRoutes(city.getName());
         log.warn("Quieried findByNameReturnRoutes returned: " + syncedCity);
@@ -40,10 +42,45 @@ public class CityService {
             for (Route route : city.getRoutes()) {
                 existingCity = existingCity.addRoute(route);
             }
-            cityRepository.save(existingCity);
+            Map<String, String> cityMap = Map.of(
+                    "name", existingCity.getName(),
+                    "description", existingCity.getDescription(),
+                    "countryName", existingCity.getCountryName()
+            );
+            List<Map<String, String>> routeMaps = existingCity.getRoutes().stream()
+                    .map(route -> Map.of(
+                            "targetCityName", route.getTargetCity().getName(),
+                            "targetCityDescription", route.getTargetCity().getDescription(),
+                            "targetCityCountryName", route.getTargetCity().getCountryName(),
+                            "popularity", route.getPopularity(),
+                            "weight", route.getWeight(),
+                            "transportType", route.getTransportType().toString()
+                    ))
+                    .collect(Collectors.toList());
+            log.warn("Saving the following to neo4j:");
+            log.warn(routeMaps);
+            cityRepository.saveCityDepth0(cityMap, routeMaps);
         } else {
             log.info("City does not exist, adding city: " + city);
-            cityRepository.save(city);
+
+            Map<String, String> cityMap = Map.of(
+                    "name", city.getName(),
+                    "description", city.getDescription(),
+                    "countryName", city.getCountryName()
+            );
+
+            List<Map<String, String>> routeMaps = city.getRoutes().stream()
+                    .map(route -> Map.of(
+                            "targetCityName", route.getTargetCity().getName(),
+                            "targetCityDescription", route.getTargetCity().getDescription(),
+                            "targetCityCountryName", route.getTargetCity().getCountryName(),
+                            "popularity", String.valueOf(route.getPopularity()),
+                            "weight", String.valueOf(route.getWeight()),
+                            "transportType", route.getTransportType().toString()
+                    ))
+                    .collect(Collectors.toList());
+            cityRepository.saveCityDepth0(cityMap, routeMaps);
+
         }
     }
 

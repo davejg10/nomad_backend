@@ -52,15 +52,26 @@ class LoadDatabase {
 
 //            pai = pai.addRoute(phuket, 2, 1, TransportType.BUS);
 
-            bangkok = bangkok.addRoute(phuket, 2, 2, TransportType.BUS);
-            phuket = phuket.addRoute(pai, 2, 1, TransportType.PLANE);
-            pai = pai.addRoute(bangkok, 2, 4, TransportType.PLANE);
+            bangkok = bangkok.addRoute(phuket, "2", "2", TransportType.BUS);
+            phuket = phuket.addRoute(pai, "2", "1", TransportType.PLANE);
+            pai = pai.addRoute(bangkok, "2", "4", TransportType.PLANE);
+            pai = pai.addRoute(bangkok, "2", "3", TransportType.PLANE);
+            pai = pai.addRoute(bangkok, "2", "4", TransportType.BUS);
 
+            City hanoi = City.of(
+                    "Hanoi",
+                    "",
+                    "Vietnam",
+                    Set.of()
+//                            new CityMetric(CityCriteria.SAILING, 4),
+//                            new CityMetric(CityCriteria.FOOD, 5),
+//                            new CityMetric(CityCriteria.NIGHTLIFE, 10)
+            );
 
             cityService.createOrUpdateCity(bangkok);
             cityService.createOrUpdateCity(phuket);
             cityService.createOrUpdateCity(pai);
-
+            cityService.createOrUpdateCity(hanoi);
 //            bangkok.addRoute(phuket, 2, 2, TransportType.BUS);
 
 
