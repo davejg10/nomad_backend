@@ -1,5 +1,6 @@
 package com.nomad.backend.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.GenericConverter;
@@ -19,9 +20,8 @@ public class Neo4jConfig {
         return new Neo4jTransactionManager(driver);
     }
 
-//    @Bean
-//    public Neo4jConversions neo4jConversions() {
-//        Set<GenericConverter> additionalConverters = Collections.singleton(new CityMetricsConverter());
-//        return new Neo4jConversions(additionalConverters);
-//    }
+    @Bean
+    public CityMetricsConverter cityMetricsConverter(ObjectMapper objectMapper) {
+        return new CityMetricsConverter(objectMapper);
+    }
 }

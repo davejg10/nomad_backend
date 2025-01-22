@@ -11,7 +11,6 @@ import java.util.Set;
 @Repository
 public interface CityRepository extends Neo4jRepository<City, String> {
 
-
     @Query("MATCH (city:City {name: $cityName}) RETURN city")
     Optional<City> findByName(String cityName);
 
@@ -30,9 +29,8 @@ public interface CityRepository extends Neo4jRepository<City, String> {
         ON CREATE SET c.id = randomUUID()
         SET c.description = $mapifiedCity.description,
             c.countryName = $mapifiedCity.countryName,
-            c.sailingMetric = $mapifiedCity.cityMetrics.sailing.metric,
-            c.foodMetric = $mapifiedCity.cityMetrics.food.metric,
-            c.nightlifeMetric = $mapifiedCity.cityMetrics.nightlife.metric
+            c.cityMetrics = $mapifiedCity.cityMetrics
+            
         
         WITH c
         UNWIND $mapifiedCity.routes AS routeData

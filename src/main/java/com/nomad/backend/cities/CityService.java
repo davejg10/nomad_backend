@@ -1,5 +1,6 @@
 package com.nomad.backend.cities;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,9 +15,11 @@ import java.util.stream.Collectors;
 public class CityService {
 
     private final CityRepository cityRepository;
+    private final ObjectMapper objectMapper;
 
     @Autowired
-    private CityService(CityRepository cityRepository) {
+    private CityService(ObjectMapper objectMapper, CityRepository cityRepository) {
+        this.objectMapper = objectMapper;
         this.cityRepository = cityRepository;
     }
 
@@ -66,8 +69,10 @@ public class CityService {
         return city;
     }
 
-    public Map<String, Object> mapifyCity(City cityToCreateOrUpdate) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        return objectMapper.convertValue(cityToCreateOrUpdate, Map.class);
+    public Map<String, Object> mapifyCity(City cityToCreateOrUpdate) throws JsonProcessingException {
+        Map<String, Object> mymap = objectMapper.convertValue(cityToCreateOrUpdate, Map.class);
+        mymap.put("cityMetrics", objectMapper.writeValueAsString(cityToCreateOrUpdate.getCityMetrics()));
+        log.warn(mymap);
+        return mymap;
     }
 }

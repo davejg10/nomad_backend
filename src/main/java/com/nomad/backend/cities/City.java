@@ -1,6 +1,5 @@
 package com.nomad.backend.cities;
 
-import com.nomad.backend.config.CityMetricsConverter;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.data.neo4j.core.convert.ConvertWith;
@@ -25,8 +24,9 @@ public class City {
     private final String description;
     @Getter
     private final String countryName;
+
     @Getter
-    @ConvertWith(converter = CityMetricsConverter.class)
+    @ConvertWith(converterRef = "cityMetricsConverter") // Uses a bean from Neo4jConfig.java
     private final CityMetrics cityMetrics;
 
     @Relationship(type = "ROUTE", direction = Relationship.Direction.OUTGOING)
@@ -84,7 +84,12 @@ public class City {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         City city = (City) o;
-        return Objects.equals(id, city.id) && Objects.equals(name, city.name) && Objects.equals(description, city.description) && Objects.equals(countryName, city.countryName) && Objects.equals(routes, city.routes);
+        return Objects.equals(id, city.id) && Objects.equals(name, city.name) && Objects.equals(description, city.description) && Objects.equals(countryName, city.countryName) && Objects.equals(cityMetrics, city.cityMetrics) && Objects.equals(routes, city.routes);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, description, countryName, cityMetrics, routes);
     }
 
     @Override
@@ -94,6 +99,7 @@ public class City {
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", countryName='" + countryName + '\'' +
+                ", cityMetrics=" + cityMetrics +
                 ", routes=" + routes +
                 '}';
     }
