@@ -14,20 +14,21 @@ public class Route {
     @RelationshipId
     @GeneratedValue
     private final String id;
-    private final String popularity;
-    private final String weight;
+
+    private final int popularity;
+    private final int weight;
     private final TransportType transportType;
 
     @TargetNode
     private final City targetCity;
 
     // This factory is used by us
-    public static Route of(City targetCity, String popularity, String weight, TransportType transportType) {
+    public static Route of(City targetCity, int popularity, int weight, TransportType transportType) {
         return new Route(null, targetCity, popularity, weight, transportType);
     }
 
     // This is used by Spring data for object mapping
-    public Route(String id, City targetCity, String popularity, String weight, TransportType transportType) {
+    public Route(String id, City targetCity, int popularity, int weight, TransportType transportType) {
         this.id = id;
         this.targetCity = targetCity;
         this.popularity = popularity;
@@ -56,7 +57,7 @@ public class Route {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Route route = (Route) o;
-        return Objects.equals(id, route.id) && Objects.equals(popularity, route.popularity) && Objects.equals(weight, route.weight) && transportType == route.transportType && Objects.equals(targetCity, route.targetCity);
+        return popularity == route.popularity && weight == route.weight && Objects.equals(id, route.id) && transportType == route.transportType && Objects.equals(targetCity, route.targetCity);
     }
 
     @Override

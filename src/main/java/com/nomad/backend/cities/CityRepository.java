@@ -4,7 +4,6 @@ import org.springframework.data.neo4j.repository.Neo4jRepository;
 import org.springframework.data.neo4j.repository.query.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -12,11 +11,13 @@ import java.util.Set;
 @Repository
 public interface CityRepository extends Neo4jRepository<City, String> {
 
+
+    @Query("MATCH (city:City {name: $cityName}) RETURN city")
     Optional<City> findByName(String cityName);
 
     @Query("""
             MATCH (city:City {name: $cityName})
-            OPTIONAL MATCH (city:City {name: $cityName}) -[rel:ROUTE]-> (targetCity:City)
+            OPTIONAL MATCH (city) -[rel:ROUTE]-> (targetCity:City)
             RETURN city, collect(rel), collect(targetCity)
            """)
     Optional<City> findByNameReturnRoutes(String cityName);
@@ -25,18 +26,21 @@ public interface CityRepository extends Neo4jRepository<City, String> {
     Set<City> findByNameIn(Set<String> cityNames);
 
     @Query("""
-        MERGE (c:City {name: $city.name})
-        ON CREATE SET c.description = $city.description,
-            c.countryName = $city.countryName,
-            c.id = randomUUID()
+        MERGE (c:City {name: $mapifiedCity.name})
+        ON CREATE SET c.id = randomUUID()
+        SET c.description = $mapifiedCity.description,
+            c.countryName = $mapifiedCity.countryName,
+            c.sailingMetric = $mapifiedCity.cityMetrics.sailing.metric,
+            c.foodMetric = $mapifiedCity.cityMetrics.food.metric,
+            c.nightlifeMetric = $mapifiedCity.cityMetrics.nightlife.metric
         
         WITH c
-        UNWIND $routes AS routeData
+        UNWIND $mapifiedCity.routes AS routeData
         
-        MERGE (t:City {name: routeData.targetCityName})
-        ON CREATE SET t.description = routeData.targetCityDescription,
-            t.countryName = routeData.targetCityCountryName,
-            c.id = randomUUID()
+        MERGE (t:City {name: routeData.targetCity.name})
+        ON CREATE SET t.description = routeData.targetCity.description,
+            t.countryName = routeData.targetCity.countryName,
+            t.id = randomUUID()
         
         WITH c, t, routeData   
         OPTIONAL MATCH (c)-[r:ROUTE {
@@ -53,6 +57,6 @@ public interface CityRepository extends Neo4jRepository<City, String> {
         
         RETURN c, collect(rel), collect(t)
     """)
-    City saveCityDepth0(Map<String, String> city, List<Map<String, String>> routes);
+    City saveCityWithDepth0(Map<String, Object> mapifiedCity);
 
 }

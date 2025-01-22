@@ -1,9 +1,10 @@
 package com.nomad.backend.cities;
 
+import com.nomad.backend.config.CityMetricsConverter;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.data.neo4j.core.convert.ConvertWith;
 import org.springframework.data.neo4j.core.schema.*;
-import org.springframework.data.neo4j.core.support.UUIDStringGenerator;
 
 import java.util.HashSet;
 import java.util.Objects;
@@ -20,32 +21,35 @@ public class City {
 
     @Getter
     private final String name;
-
     @Getter
     private final String description;
     @Getter
     private final String countryName;
+    @Getter
+    @ConvertWith(converter = CityMetricsConverter.class)
+    private final CityMetrics cityMetrics;
 
     @Relationship(type = "ROUTE", direction = Relationship.Direction.OUTGOING)
     private final Set<Route> routes;
 
     // This factory is used by us
-    public static City of(String name, String description, String countryName, Set<Route> routes) {
-        return new City(null, name, description, countryName, Set.copyOf(routes));
+    public static City of(String name, String description, String countryName, CityMetrics cityMetrics, Set<Route> routes) {
+        return new City(null, name, description, countryName, cityMetrics, Set.copyOf(routes));
     }
 
     // This is used by Spring Data for object mapping
-    public City(String id, String name, String description, String countryName, Set<Route> routes) {
+    public City(String id, String name, String description, String countryName, CityMetrics cityMetrics, Set<Route> routes) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.countryName = countryName;
+        this.cityMetrics = cityMetrics;
         this.routes = routes;
     }
 
     // This is used by Neo4j for object mapping
     public City withId(String id) {
-        return new City(id, this.name, this.description, this.countryName, this.routes);
+        return new City(id, this.name, this.description, this.countryName, this.cityMetrics, this.routes);
     }
 
     // Ensure mutable field 'routes' remains immutable
@@ -53,37 +57,26 @@ public class City {
         return new HashSet<>(routes);
     }
 
-    public City addRoute(Route route) {
-        return addRoute(route.getTargetCity(), route.getPopularity(), route.getWeight(), route.getTransportType());
-    }
-
-    public City addRoute(City targetCity, String popularity, String weight, TransportType transportType) {
+    public City addRoute(City targetCity, int popularity, int weight, TransportType transportType) {
         Set<Route> existingRoutes = getRoutes();
         Route routeToAdd = Route.of(targetCity, popularity, weight, transportType);
 
-        Optional<Route> routeExists = existingRoutes.stream()
-                .filter(route -> Objects.equals(route.getTargetCity().getName(), targetCity.getName()) && route.getTransportType() == transportType)
+        Optional<Route> route = existingRoutes.stream()
+                .filter(r -> Objects.equals(r.getTargetCity().getName(), targetCity.getName()) && r.getTransportType() == transportType)
                 .findFirst();
 
-        if (routeExists.isPresent()) {
-            Route route = routeExists.get();
-            if (!Objects.equals(route.getPopularity(), popularity) || !Objects.equals(route.getWeight(), weight)) {
-                existingRoutes.remove(route);
+        if (route.isPresent()) {
+            Route existingRoute = route.get();
+            if (!Objects.equals(existingRoute.getPopularity(), popularity) || !Objects.equals(existingRoute.getWeight(), weight)) {
+                existingRoutes.remove(existingRoute);
                 existingRoutes.add(routeToAdd);
-                log.warn("Route with same transport type already exists but popularity or weight are different");
-                log.warn("Old route: " + route);
-                log.warn("New route: " + routeToAdd);
-                return new City(this.id, this.name, this.description, this.countryName, existingRoutes);
             } else {
-                log.warn("Route exists already, removing route.....");
-                existingRoutes.remove(route);
-                return new City(this.id, this.name, this.description, this.countryName, existingRoutes);            }
+                existingRoutes.remove(existingRoute);
+            }
         } else {
             existingRoutes.add(routeToAdd);
-            log.info("Route does not existing, adding route...");
-            log.info("New route: " + routeToAdd);
-            return new City(this.id, this.name, this.description, this.countryName, existingRoutes);
         }
+        return new City(this.id, this.name, this.description, this.countryName, this.cityMetrics, existingRoutes);
     }
 
     @Override
