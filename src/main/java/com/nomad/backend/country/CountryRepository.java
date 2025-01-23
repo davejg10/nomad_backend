@@ -1,24 +1,34 @@
 package com.nomad.backend.country;
 
+import com.nomad.backend.country.domain.Country;
+import org.springframework.data.neo4j.repository.Neo4jRepository;
+import org.springframework.data.neo4j.repository.query.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
+import java.util.*;
 
 @Repository
-public class CountryRepository {
+public interface CountryRepository extends Neo4jRepository<Country, String> {
 
-    private static List<Country> countries = IntStream.range(0, 12).boxed()
-            .map(i -> new Country("Country" + i, ""))
-            .collect(Collectors.toList());
+    @Query("""
+        MERGE (c:Country {name: $country.__properties__.name})
+        ON CREATE SET c.id = randomUUID()
+        SET c.description = $country.__properties__.description
+    """)
+    Country saveCountryWithDepth0(Country country);
 
-//    public static List<UUID> countryUUIDs = countries.stream().map(Country::getId).toList();
+    @Query("MATCH (country:Country {name: $countryName}) RETURN country")
+    Optional<Country> findByName(String countryName);
 
+    @Query("""
+      MATCH(country:Country) RETURN country
+    """)
+    Set<Country> findAllCountries();
 
-    public List<Country> getAll() {
-        return countries;
-    }
-
+    @Query("""
+      MATCH (country:Country {name: $countryName})
+      OPTIONAL MATCH (country) -[rel:HAS_CITY]-> (cities:City)
+      RETURN country, collect(rel), collect(cities)
+    """)
+    Optional<Country> findByNameFetchCities(String countryName);
 }

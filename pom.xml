@@ -58,6 +58,20 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-neo4j</artifactId>
 		</dependency>
+
+		<!-- Used for testing Neo4j repository. Creates an in-memory db	-->
+		<dependency>
+			<groupId>org.neo4j.test</groupId>
+			<artifactId>neo4j-harness</artifactId>
+			<version>5.26.0</version>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-nop</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
 	</dependencies>
 
 	<build>

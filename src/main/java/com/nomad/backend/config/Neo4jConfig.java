@@ -12,7 +12,6 @@ import java.util.Collections;
 import java.util.Set;
 
 @Configuration
-@EnableTransactionManagement
 public class Neo4jConfig {
 
     @Bean
@@ -23,5 +22,11 @@ public class Neo4jConfig {
     @Bean
     public CityMetricsConverter cityMetricsConverter(ObjectMapper objectMapper) {
         return new CityMetricsConverter(objectMapper);
+    }
+
+    @Bean
+    public Neo4jConversions neo4jConversions() {
+        Set<GenericConverter> additionalConverters = Collections.singleton(new RouteConverter());
+        return new Neo4jConversions(additionalConverters);
     }
 }

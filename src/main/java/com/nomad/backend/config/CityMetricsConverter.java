@@ -2,10 +2,11 @@ package com.nomad.backend.config;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nomad.backend.cities.CityMetric;
-import com.nomad.backend.cities.CityMetrics;
+import com.nomad.backend.city.domain.CityMetric;
+import com.nomad.backend.city.domain.CityMetrics;
 import lombok.extern.log4j.Log4j2;
 import org.neo4j.driver.Value;
+import org.neo4j.driver.Values;
 import org.springframework.data.neo4j.core.convert.Neo4jPersistentPropertyConverter;
 
 import java.util.Map;
@@ -21,7 +22,12 @@ public class CityMetricsConverter implements Neo4jPersistentPropertyConverter<Ci
 
     @Override
     public Value write(CityMetrics source) {
-        return null;
+        try {
+            String cityMetrics = objectMapper.writeValueAsString(source);
+            return Values.value(cityMetrics);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

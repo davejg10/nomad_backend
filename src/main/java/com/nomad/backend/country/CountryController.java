@@ -1,25 +1,35 @@
 package com.nomad.backend.country;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import com.nomad.backend.country.domain.Country;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/countries")
 public class CountryController {
 
-    @Autowired
-    private CountryRepository repository;
+    private final CountryService countryService;
+
+    public CountryController(CountryService countryService) {
+        this.countryService = countryService;
+    }
 
     @GetMapping
-    public ResponseEntity<List<Country>> getAll() {
+    public ResponseEntity<Set<Country>> getAll() {
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(repository.getAll());
+                .body(countryService.findAllCountries());
+    }
+
+    @GetMapping(path={"/{countryName}"})
+    public ResponseEntity<Country> getCountry(
+            @PathVariable String countryName,
+            @RequestParam(defaultValue = "false") boolean returnAllCities) {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(countryService.getCountryByName(countryName, returnAllCities));
     }
 }
