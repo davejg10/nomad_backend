@@ -58,6 +58,7 @@ class LoadDatabase {
 //            cityE = cityE.addRoute(cityC, 1, 1, TransportType.BUS);
 
             cityService.createOrUpdateCity(cityA);
+            log.warn("findAll {}", cityRepository.findAll());
 //            cityService.createOrUpdateCity(cityB);
 //            cityService.createOrUpdateCity(cityC);
 //            cityService.createOrUpdateCity(cityD);

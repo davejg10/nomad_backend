@@ -31,7 +31,7 @@ public interface CityRepository extends Neo4jRepository<City, String> {
         
         MERGE (t:City {name: routeData.targetCity.name})
         ON CREATE SET t.description = routeData.targetCity.description,
-            t.id = randomUUID(),
+            t.id = randomUUID()
         
         WITH c, t, routeData   
         OPTIONAL MATCH (c)-[r:ROUTE {
