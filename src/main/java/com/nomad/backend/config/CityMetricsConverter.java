@@ -6,7 +6,6 @@ import com.nomad.backend.city.domain.CityMetric;
 import com.nomad.backend.city.domain.CityMetrics;
 import lombok.extern.log4j.Log4j2;
 import org.neo4j.driver.Value;
-import org.neo4j.driver.Values;
 import org.springframework.data.neo4j.core.convert.Neo4jPersistentPropertyConverter;
 
 import java.util.Map;
@@ -21,14 +20,7 @@ public class CityMetricsConverter implements Neo4jPersistentPropertyConverter<Ci
     }
 
     @Override
-    public Value write(CityMetrics source) {
-        try {
-            String cityMetrics = objectMapper.writeValueAsString(source);
-            return Values.value(cityMetrics);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    public Value write(CityMetrics source) { return null; } // CityMetricsSerializer is used instead.
 
     @Override
     public CityMetrics read(Value source) {

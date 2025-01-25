@@ -1,7 +1,7 @@
-package com.nomad.backend.city;
+package com.nomad.backend.city.domain;
 
-import com.nomad.backend.city.domain.*;
 import com.nomad.backend.country.domain.Country;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -11,16 +11,19 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Slf4j
 @ExtendWith(MockitoExtension.class)
 public class CityTest {
 
-    @Mock CityMetrics cityMetrics;
-    @Mock Country country;
+    @Mock
+    CityMetrics cityMetrics;
+    @Mock
+    Country country;
 
     @Test
-    void addRoute_ShouldAddARoute_whenRouteDoesntExist() {
-        City city =  City.of("CityA", "", cityMetrics, Set.of(), country);
-        City targetCity =  City.of("CityB", "", cityMetrics, Set.of(), country);
+    void addRoute_shouldAddRoute_whenRouteDoesntExist() {
+        City city = City.of("CityA", "", cityMetrics, Set.of(), country);
+        City targetCity = City.of("CityB", "", cityMetrics, Set.of(), country);
 
         assertThat(city.getRoutes()).isEmpty();
 
@@ -32,9 +35,9 @@ public class CityTest {
     }
 
     @Test
-    void addRoute_ShouldNotAddARoute_whenRouteAlreadyExists() {
-        City city =  City.of("CityA", "", cityMetrics, Set.of(), country);
-        City targetCity =  City.of("CityB", "", cityMetrics, Set.of(), country);
+    void addRoute_shouldNotAddRoute_whenRouteAlreadyExists() {
+        City city = City.of("CityA", "", cityMetrics, Set.of(), country);
+        City targetCity = City.of("CityB", "", cityMetrics, Set.of(), country);
 
         assertThat(city.getRoutes()).isEmpty();
 
@@ -50,9 +53,9 @@ public class CityTest {
     }
 
     @Test
-    void addRoute_ShouldOverwriteRoute_whenRouteToAddHasDifferentMetricsButSameTargetAndSameTransportType() {
-        City city =  City.of("CityA", "", cityMetrics, Set.of(), country);
-        City targetCity =  City.of("CityB", "", cityMetrics, Set.of(), country);
+    void addRoute_shouldOverwriteRoute_whenRouteToAddHasDifferentMetricsButSameTargetAndSameTransportType() {
+        City city = City.of("CityA", "", cityMetrics, Set.of(), country);
+        City targetCity = City.of("CityB", "", cityMetrics, Set.of(), country);
 
         assertThat(city.getRoutes()).isEmpty();
 

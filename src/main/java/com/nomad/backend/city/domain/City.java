@@ -1,7 +1,8 @@
 package com.nomad.backend.city.domain;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.nomad.backend.config.CityMetricsSerializer;
 import com.nomad.backend.country.domain.Country;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
@@ -19,7 +20,8 @@ public class City {
     @Getter private final String name;
     @Getter private final String description;
 
-    @ConvertWith(converterRef = "cityMetricsConverter") // Uses a bean from Neo4jConfig.java
+    @JsonSerialize(using = CityMetricsSerializer.class) // Conversion TO Neo4j.Value (called by mapifyCity())
+    @ConvertWith(converterRef = "cityMetricsConverter") // Conversion TO CityMetrics (when being read)
     @Getter private final CityMetrics cityMetrics;
 
     @Relationship(type = "ROUTE", direction = Relationship.Direction.OUTGOING)
@@ -83,8 +85,6 @@ public class City {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         City city = (City) o;
-        log.warn("City routes: {} ", city.getRoutes().containsAll(routes));
-        log.warn("This routes: {}", routes.containsAll(city.getRoutes()));
         return Objects.equals(id, city.id) && Objects.equals(name, city.name) && Objects.equals(description, city.description) && Objects.equals(cityMetrics, city.cityMetrics) && city.getRoutes().containsAll(routes) && routes.containsAll(city.getRoutes()) && Objects.equals(country, city.country);
     }
 
@@ -103,14 +103,5 @@ public class City {
                 ", routes=" + routes +
                 ", country=" + country +
                 '}';
-    }
-
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-
-    public Map<String, Object> mapifyCity() throws JsonProcessingException {
-        Map<String, Object> cityAsMap = OBJECT_MAPPER.convertValue(this, Map.class);
-        // Stringify cityMetrics rather than creating a nested Hashmap, so it can be persisted in 1 neo4j field
-        cityAsMap.put("cityMetrics", OBJECT_MAPPER.writeValueAsString(this.getCityMetrics()));
-        return cityAsMap;
     }
 }

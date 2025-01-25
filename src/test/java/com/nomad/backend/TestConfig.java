@@ -11,9 +11,9 @@ import org.springframework.context.annotation.Import;
 @Import({JacksonAutoConfiguration.class}) // For ObjectMapper
 public class TestConfig {
 
-
     @Bean
     public CityMetricsConverter cityMetricsConverter(ObjectMapper objectMapper) {
         return new CityMetricsConverter(objectMapper);
     }
+
 }

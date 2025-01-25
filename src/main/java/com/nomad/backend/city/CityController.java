@@ -21,12 +21,10 @@ public class CityController {
     @GetMapping("/{id}")
     public ResponseEntity<City> getCity(
             @PathVariable String id,
-            @RequestParam(defaultValue = "false") boolean includeNextHops) {
+            @RequestParam(defaultValue = "false") boolean includeRoutes) {
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(cityService.getCity(id, includeNextHops));
+                .body(cityService.getCity(id, includeRoutes));
     }
-
-
 }
 
