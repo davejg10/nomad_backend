@@ -10,6 +10,8 @@ import org.springframework.data.neo4j.core.convert.Neo4jPersistentPropertyConver
 
 import java.util.Map;
 
+// This class is used to convert the a Neo4j Value to a CityMetrics object. I.e the reverse of CityMetricsSerializer
+// Its automatically called by the cityMapper defined in CityRepository when we call cityMapper.apply(typeSystem, record.get("city").asNode());
 @Log4j2
 public class CityMetricsConverter implements Neo4jPersistentPropertyConverter<CityMetrics> {
 
