@@ -5,14 +5,14 @@ import com.nomad.backend.city.domain.City;
 import com.nomad.backend.country.domain.Country;
 import org.neo4j.driver.types.MapAccessor;
 import org.neo4j.driver.types.TypeSystem;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.data.neo4j.core.Neo4jClient;
 import org.springframework.data.neo4j.core.mapping.Neo4jMappingContext;
+import org.springframework.stereotype.Repository;
 
 import java.util.*;
 import java.util.function.BiFunction;
 
-@Configuration
+@Repository
 public class CountryRepository {
 
     private final Neo4jClient client;
