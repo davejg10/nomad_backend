@@ -34,3 +34,13 @@ You will need a Neo4j container running locally.
 docker run --publish=7474:7474 --publish=7687:7687 -e 'NEO4J_AUTH=neo4j/mypassword' neo4j:5
 ```
 
+
+# Accessing Neo4j terminal
+
+Sometimes it is useful to visualize the data in neo4j. You can get a terminal to the neo4j instance using 
+
+```
+http://localhost:7474/browser/
+```
+
+The pasword will be `mypassword`
