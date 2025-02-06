@@ -26,5 +26,14 @@ public class CityController {
                 .status(HttpStatus.OK)
                 .body(cityService.getCity(id, includeRoutes));
     }
+
+    @GetMapping("/{id}/routes/{routesCountryId}")
+    public ResponseEntity<City> getCityFetchRoutesWithCountryId(
+            @PathVariable String id,
+            @PathVariable String routesCountryId) {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(cityService.getCityFetchRoutesWithCountryId(id, routesCountryId));
+    }
 }
 

@@ -21,10 +21,4 @@ public class BackendApplication {
 		SpringApplication.run(BackendApplication.class, args);
 	}
 
-	@Bean
-	Configuration cypherDslConfiguration() {
-		return Configuration.newConfig()
-				.withDialect(Dialect.NEO4J_5).build();
-	}
-
 }

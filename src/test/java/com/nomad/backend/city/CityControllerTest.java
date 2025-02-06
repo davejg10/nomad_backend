@@ -30,7 +30,8 @@ public class CityControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    Country country = Country.of("CountryA", "", Set.of());
+    String countryId = "f1f9416f-0e7c-447c-938c-5d39cf10dad3";
+    Country country = new Country(countryId, "CountryA", "", Set.of());
 
     String cityAId = "1226a656-0450-4156-a522-4ae588caa937";
     String cityBId = "f19c59be-a9b1-4fa4-a96c-e11f2bb111c0";
@@ -45,8 +46,6 @@ public class CityControllerTest {
 
     @Test
     void getCity_shouldReturn200_whenCityExists() throws Exception {
-        cityA.addRoute(cityB, 3, 4, TransportType.BUS);
-
         Mockito.when(cityService.getCity(cityAId, true)).thenReturn(cityA);
         mockMvc.perform(get(String.format("/cities/%s", cityAId))
                         .param("includeRoutes", "true"))
@@ -67,6 +66,27 @@ public class CityControllerTest {
 
         MvcResult mvcResult = mockMvc.perform(get(String.format("/cities/%s", cityAId))
                         .param("includeRoutes", "true"))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("City not found"))
+                .andReturn();
+    }
+
+    @Test
+    void getCityFetchRoutesWithCountryId_shouldReturn200_whenCityExists() throws Exception {
+        cityA.addRoute(cityB, 3, 4, TransportType.BUS);
+
+        Mockito.when(cityService.getCityFetchRoutesWithCountryId(cityAId, countryId)).thenReturn(cityA);
+        mockMvc.perform(get(String.format("/cities/%s/routes/%s", cityAId, countryId)))
+                .andExpect(status().isOk())
+                .andReturn();
+    }
+
+    @Test
+    void getCityFetchRoutesWithCountryId_shouldReturn404_whenCityNotFound() throws Exception {
+
+        Mockito.when(cityService.getCityFetchRoutesWithCountryId(cityAId, countryId)).thenThrow(new NotFoundRequestException("City not found"));
+
+        MvcResult mvcResult = mockMvc.perform(get(String.format("/cities/%s/routes/%s", cityAId, countryId)))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string("City not found"))
                 .andReturn();

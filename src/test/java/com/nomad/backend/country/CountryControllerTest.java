@@ -44,6 +44,7 @@ public class CountryControllerTest {
 
     String countryAName = "CountryA";
     String countryBName = "CountryB";
+    String countryAId = "1226a656-0450-4156-a522-4ae588caa937";
 
     @Mock
     CityMetrics cityMetrics;
@@ -51,7 +52,7 @@ public class CountryControllerTest {
     City cityA = City.of("CityA", "", cityMetrics, Set.of(), null);
     City cityB = City.of("CityB", "", cityMetrics, Set.of(), null);
 
-    Country countryA = Country.of(countryAName, "", Set.of(cityA, cityB));
+    Country countryA = new Country(countryAId, countryAName, "", Set.of(cityA, cityB));
     Country countryB = Country.of(countryBName, "", Set.of());
 
 
@@ -78,33 +79,28 @@ public class CountryControllerTest {
     }
 
     @Test
-    void getCountry_shouldReturn404_whenCountryDoesntExist() throws Exception {
+    void getCitiesGivenCountry_shouldReturn404_whenCountryDoesntExist() throws Exception {
 
-        Mockito.when(countryService.getCountryByName("not exist", false)).thenThrow(new NotFoundRequestException("Country not found"));
+        Mockito.when(countryService.getCitiesGivenCountry("not exist")).thenThrow(new NotFoundRequestException("Country not found"));
 
-        mockMvc.perform(get(String.format("/countries/%s", "not exist"))
-                        .param("returnAllCities", "false"))
+        mockMvc.perform(get(String.format("/countries/%s/cities", "not exist")))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string("Country not found"))
                 .andReturn();
     }
 
     @Test
-    void getCountry_shouldReturn200_whenCountryExists() throws Exception {
-        Mockito.when(countryService.getCountryByName(countryAName, false)).thenReturn(countryA);
+    void getCitiesGivenCountry_shouldReturn200_whenCountryExists() throws Exception {
+        Mockito.when(countryService.getCitiesGivenCountry(countryAId)).thenReturn(Set.of(cityA, cityB));
 
-        mockMvc.perform(get(String.format("/countries/%s", countryAName))
-                        .param("returnAllCities", "false"))
+        mockMvc.perform(get(String.format("/countries/%s/cities", countryAId)))
                 .andExpect(status().isOk())
                 .andReturn();
 
-        Mockito.when(countryService.getCountryByName(countryAName, true)).thenReturn(countryA);
+        Mockito.when(countryService.getCitiesGivenCountry(countryAId)).thenReturn(Set.of(cityA, cityB));
 
-        mockMvc.perform(get(String.format("/countries/%s", countryAName))
-                        .param("returnAllCities", "true"))
+        mockMvc.perform(get(String.format("/countries/%s/cities", countryAId)))
                 .andExpect(status().isOk())
                 .andReturn();
     }
-
-
 }

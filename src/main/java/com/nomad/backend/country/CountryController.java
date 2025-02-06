@@ -1,5 +1,6 @@
 package com.nomad.backend.country;
 
+import com.nomad.backend.city.domain.City;
 import com.nomad.backend.country.domain.Country;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,12 +25,10 @@ public class CountryController {
                 .body(countryService.findAllCountries());
     }
 
-    @GetMapping(path={"/{countryName}"})
-    public ResponseEntity<Country> getCountry(
-            @PathVariable String countryName,
-            @RequestParam(defaultValue = "false") boolean returnAllCities) {
+    @GetMapping(path={"/{countryId}/cities"})
+    public ResponseEntity<Set<City>> getCitiesGivenCountry(@PathVariable String countryId) {
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(countryService.getCountryByName(countryName, returnAllCities));
+                .body(countryService.getCitiesGivenCountry(countryId));
     }
 }

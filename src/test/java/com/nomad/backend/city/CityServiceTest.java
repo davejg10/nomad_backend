@@ -15,6 +15,8 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 public class CityServiceTest {
@@ -25,7 +27,8 @@ public class CityServiceTest {
     @InjectMocks
     private CityService cityService;
 
-    Country country = Country.of("CountryA", "", Set.of());
+    String countryId = "f1f9416f-0e7c-447c-938c-5d39cf10dad3";
+    Country country = new Country(countryId, "CountryA", "", Set.of());
 
     String cityAId = "1226a656-0450-4156-a522-4ae588caa937";
     String cityBId = "f19c59be-a9b1-4fa4-a96c-e11f2bb111c0";
@@ -39,30 +42,47 @@ public class CityServiceTest {
     City cityB = new City(cityBId, cityBName, "", cityMetrics, Set.of(), country);
 
     @Test
-    void getCity_shouldReturnCityWithoutRoutesFieldPopulated_whenIncludeRoutesIsFalse() {
-        City cityABeforeRoutes = cityA;
-        cityA.addRoute(cityB, 3, 4, TransportType.BUS);
+    void getCity_shouldReturnCity_whenCityExists() {
+        City cityAWithRoute = cityA.addRoute(cityB, 3, 4, TransportType.BUS);
         Mockito.when(cityRepository.findById(cityAId)).thenReturn(Optional.of(cityA));
+        Mockito.when(cityRepository.findByIdFetchRoutes(cityAId)).thenReturn(Optional.of(cityAWithRoute));
 
         City returnedCity = cityService.getCity(cityAId, false);
-
-        assertThat(returnedCity).isEqualTo(cityABeforeRoutes);
-    }
-
-    @Test
-    void getCity_shouldReturnCityWithRoutesFieldPopulated_whenIncludeRoutesIsTrue() {
-        cityA.addRoute(cityB, 3, 4, TransportType.BUS);
-        Mockito.when(cityRepository.findByIdFetchRoutes(cityAId)).thenReturn(Optional.of(cityA));
-
-        City returnedCity = cityService.getCity(cityAId, true);
-
         assertThat(returnedCity).isEqualTo(cityA);
+
+        returnedCity = cityService.getCity(cityAId, true);
+
+        assertThat(returnedCity).isEqualTo(cityAWithRoute);
+
+        verify(cityRepository, times(1)).findById(cityAId);
+        verify(cityRepository, times(1)).findByIdFetchRoutes(cityAId);
     }
+
 
     @Test
     void getCity_shouldThrowNotFoundRequestException_whenCityDoesntExist() {
         Mockito.when(cityRepository.findById(cityAId)).thenReturn(Optional.empty());
         Throwable exception = assertThrows(NotFoundRequestException.class, () -> cityService.getCity(cityAId, false));
+        Mockito.when(cityRepository.findByIdFetchRoutes(cityAId)).thenReturn(Optional.empty());
+        exception = assertThrows(NotFoundRequestException.class, () -> cityService.getCity(cityAId, true));
+
+    }
+
+
+    @Test
+    void getCityFetchRoutesWithCountryId_shouldReturnCity_whenCityExists() {
+        cityA = cityA.addRoute(cityB, 3, 4, TransportType.BUS);
+        Mockito.when(cityRepository.findByIdFetchRoutesByCountryId(cityAId, countryId)).thenReturn(Optional.of(cityA));
+
+        City returnedCity = cityService.getCityFetchRoutesWithCountryId(cityAId, countryId);
+
+        assertThat(returnedCity).isEqualTo(cityA);
+    }
+
+    @Test
+    void getCityFetchRoutesWithCountryId_shouldThrowNotFoundRequestException_whenCityDoesntExist() {
+        Mockito.when(cityRepository.findByIdFetchRoutesByCountryId(cityAId, countryId)).thenReturn(Optional.empty());
+        Throwable exception = assertThrows(NotFoundRequestException.class, () -> cityService.getCityFetchRoutesWithCountryId(cityAId, countryId));
 
     }
 }

@@ -1,5 +1,6 @@
 package com.nomad.backend.country;
 
+import com.nomad.backend.city.domain.City;
 import com.nomad.backend.country.domain.Country;
 import com.nomad.backend.exceptions.NotFoundRequestException;
 import lombok.extern.log4j.Log4j2;
@@ -23,15 +24,15 @@ public class CountryService {
         return countryRepository.findAllCountries();
     }
 
-    public Country getCountryByName(String countryName, boolean returnAllCities) throws NotFoundRequestException {
-        log.info("Fetching country by name: {}, with returnAllCities: {}", countryName, returnAllCities);
-        Optional<Country> country = returnAllCities ? countryRepository.findByNameFetchCities(countryName) : countryRepository.findByName(countryName);
+    public Set<City> getCitiesGivenCountry(String countryId) throws NotFoundRequestException {
+        log.info("Fetching cities given country country by id: {}", countryId);
+        Optional<Country> country = countryRepository.findByIdFetchCities(countryId);
 
         if (country.isPresent()) {
-            return country.get();
+            return country.get().getCities();
         } else {
-            log.warn("Country not found with name: {}", countryName);
-            throw new NotFoundRequestException("Country " + countryName + " not found.");
+            log.warn("Country with id: {}, not found.", countryId);
+            throw new NotFoundRequestException("Country with id " + countryId + " not found.");
         }
     }
 

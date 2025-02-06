@@ -35,7 +35,8 @@ public class CountryServiceTest {
     City cityB = City.of(cityBName, "", cityMetrics, Set.of(), null);
 
     String countryName = "CountryA";
-    Country country =  Country.of(countryName, "", Set.of(cityA, cityB));
+    String countryId = "1226a656-0450-4156-a522-4ae588caa937";
+    Country country = new Country(countryId, countryName, "", Set.of(cityA, cityB));
 
     @Test
     void findAllCountries_shouldReturnAllCountries() {
@@ -47,28 +48,28 @@ public class CountryServiceTest {
     }
 
     @Test
-    void getCountryByName_shouldReturnAllCountriesWithCitiesFieldPopulated_whenReturnAllCitiesIsTrue() {
-        Mockito.when(countryRepository.findByNameFetchCities(countryName)).thenReturn(Optional.of(country));
+    void getCitiesGivenCountry_shouldReturnACountriesSetOfCities_whenGivenAValidCountryId() {
+        Mockito.when(countryRepository.findByIdFetchCities(countryId)).thenReturn(Optional.of(country));
 
-        Country country = countryService.getCountryByName(countryName, true);
+        Set<City> allCities = countryService.getCitiesGivenCountry(countryId);
 
-        assertThat(country.getCities()).isEqualTo(Set.of(cityA, cityB));
+        assertThat(allCities).isEqualTo(Set.of(cityA, cityB));
     }
 
     @Test
-    void getCountryByName_shouldReturnAllCountriesWithoutCitiesFieldPopulated_whenReturnAllCitiesIsFalse() {
-        Mockito.when(countryRepository.findByName(countryName)).thenReturn(Optional.of(Country.of(country.getName(), country.getDescription(), Set.of())));
+    void getCitiesGivenCountry_shouldReturnEmptySet_whenGivenAValidIdForACountryWithNoCities() {
+        Mockito.when(countryRepository.findByIdFetchCities(countryId)).thenReturn(Optional.of(new Country(country.getId(), country.getName(), country.getDescription(), Set.of())));
 
-        Country country = countryService.getCountryByName(countryName, false);
+        Set<City> allCities = countryService.getCitiesGivenCountry(countryId);
 
-        assertThat(country.getCities()).isEmpty();
+        assertThat(allCities).isEmpty();
     }
 
     @Test
-    void getCountryByName_shouldThrowNotFoundRequestException_whenCountryDoestExist() {
+    void getCitiesGivenCountry_shouldThrowNotFoundRequestException_whenGivenInvalidCountryId() {
 
-        Mockito.when(countryRepository.findByName(countryName)).thenReturn(Optional.empty());
-        Throwable exception = assertThrows(NotFoundRequestException.class, () -> countryService.getCountryByName(countryName, false));
+        Mockito.when(countryRepository.findByIdFetchCities("invalid")).thenReturn(Optional.empty());
+        Throwable exception = assertThrows(NotFoundRequestException.class, () -> countryService.getCitiesGivenCountry("invalid"));
 
     }
 }

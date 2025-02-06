@@ -6,5 +6,5 @@ import lombok.Value;
 public class CityMetric {
 
     CityCriteria criteria;
-    int metric;
+    double metric;
 }

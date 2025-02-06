@@ -27,22 +27,22 @@ public class CountryRepository {
         this.countryMapper = schema.getRequiredMappingFunctionFor(Country.class);
     }
 
-    public Optional<Country> findByName(String name) {
-        return findByName(name, false);
+    public Optional<Country> findById(String countryId) {
+        return findById(countryId, false);
     }
 
-    public Optional<Country> findByNameFetchCities(String name) {
-        return findByName(name, true);
+    public Optional<Country> findByIdFetchCities(String countryId) {
+        return findById(countryId, true);
     }
 
-    private Optional<Country> findByName(String name, boolean returnAllCities) {
+    private Optional<Country> findById(String countryId, boolean returnAllCities) {
         Optional<Country> country = client
                 .query("""
-                    MATCH (country:Country {name: $name})
+                    MATCH (country:Country {id: $countryId})
                     OPTIONAL MATCH (country) -[hasCity:HAS_CITY]-> (cities:City)
                     RETURN country, collect(hasCity) as hasCity, collect(cities) as cities
                 """)
-                .bind(name).to("name")
+                .bind(countryId).to("countryId")
                 .fetchAs(Country.class)
                 .mappedBy((typeSystem, record) -> {
                     Country fetchedCountry = countryMapper.apply(typeSystem, record.get("country").asNode());
@@ -52,6 +52,7 @@ public class CountryRepository {
 
                         record.get("cities").asList(city -> {
                             City createdTargetCity = cityMapper.apply(typeSystem, city.asNode());
+                            createdTargetCity = new City(createdTargetCity.getId(), createdTargetCity.getName(), createdTargetCity.getDescription(), createdTargetCity.getCityMetrics(), createdTargetCity.getRoutes(), fetchedCountry);
                             cities.add(createdTargetCity);
                             return null;
                         });

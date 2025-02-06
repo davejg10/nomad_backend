@@ -1,14 +1,18 @@
 package com.nomad.backend;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-//This fails unless at the moment I think cos we dont have a neo4j database running
-//@SpringBootTest
-//class BackendApplicationTests {
-//
-//	@Test
-//	void contextLoads() {
-//	}
-//
-//}
+@SpringBootTest
+class BackendApplicationTests {
+
+    @MockitoBean
+    private CommandLineRunner loadDatabase; // Dont include this bean as it requires connection to DB
+
+	@Test
+	void contextLoads() {
+	}
+
+}

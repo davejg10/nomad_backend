@@ -13,6 +13,7 @@ import org.springframework.data.neo4j.core.mapping.Neo4jMappingContext;
 
 import java.util.*;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Configuration
@@ -30,15 +31,51 @@ public class CityRepository {
         this.countryMapper = schema.getRequiredMappingFunctionFor(Country.class);
     }
 
-    private Set<Route> mapRoutes(TypeSystem typeSystem, Value routesValue, Value targetCitiesValue) {
-        Map<String, City> targetCityMap = new HashMap<>();
+    // TODO think there will be ways of making this more efficient. Note that there are ids within node sets start = 5 for instace..
+    private Map<String, City> mapTargetCitiesAndCountries(TypeSystem typeSystem, Value targetCitiesValue, Value targetCityCountryRelValue, Value targetCityCountryValue) {
+        Map<String, Country> targetCountriesMap = new HashMap<>();
+        Map<String, City> targetCitiesMap = new HashMap<>();
 
-        targetCitiesValue.asList(targetCity -> {
-            String nodeElementId = targetCity.asNode().elementId();
-            City createdTargetCity = cityMapper.apply(typeSystem, targetCity.asNode());
-            targetCityMap.put(nodeElementId, createdTargetCity);
+        targetCityCountryValue.asList(targetCountry -> {
+            String nodeElementId = targetCountry.asNode().elementId();
+            Country createdTargetCountry = countryMapper.apply(typeSystem, targetCountry.asNode());
+            targetCountriesMap.put(nodeElementId, createdTargetCountry);
             return null;
         });
+
+        targetCitiesValue.asList(targetCity -> {
+            String targetCityNodeElementId = targetCity.asNode().elementId();
+            String targetCountryNodeElementId = targetCityCountryRelValue
+                    .asList(targetCityCountry -> targetCityCountry.asRelationship())
+                    .stream()
+                    .filter(targetCityCountryRel -> targetCityCountryRel.startNodeElementId().equals(targetCityNodeElementId))
+                    .findFirst().get().endNodeElementId();
+
+            Country targetCityCountry = targetCountriesMap.get(targetCountryNodeElementId);
+            City createdTargetCity = cityMapper.apply(typeSystem, targetCity.asNode());
+            City createdTargetCityWithCountry = new City(createdTargetCity.getId(), createdTargetCity.getName(), createdTargetCity.getDescription(), createdTargetCity.getCityMetrics(), createdTargetCity.getRoutes(), targetCityCountry);
+            targetCitiesMap.put(targetCityNodeElementId, createdTargetCityWithCountry);
+            return null;
+        });
+
+        return targetCitiesMap;
+    }
+
+    private Map<String, City> mapTargetCities(TypeSystem typeSystem, Value targetCitiesValue, Country country) {
+        Map<String, City> targetCitiesMap = new HashMap<>();
+
+        targetCitiesValue.asList(targetCity -> {
+            String targetCityNodeElementId = targetCity.asNode().elementId();
+            City createdTargetCity = cityMapper.apply(typeSystem, targetCity.asNode());
+            City createdTargetCityWithCountry = new City(createdTargetCity.getId(), createdTargetCity.getName(), createdTargetCity.getDescription(), createdTargetCity.getCityMetrics(), createdTargetCity.getRoutes(), country);
+            targetCitiesMap.put(targetCityNodeElementId, createdTargetCityWithCountry);
+            return null;
+        });
+
+        return targetCitiesMap;
+    }
+
+    private Set<Route> mapRoutes(TypeSystem typeSystem, Value routesValue, Map<String, City> targetCitiesMap) {
 
         Set<Route> routes = new HashSet<>(routesValue
                 .asList(route -> {
@@ -46,9 +83,9 @@ public class CityRepository {
                     String elementId = route.asEntity().elementId().toString();
                     return new Route(
                             elementId,
-                            targetCityMap.get(endNodeElementId),
-                            route.get("popularity").asInt(),
-                            route.get("weight").asInt(),
+                            targetCitiesMap.get(endNodeElementId),
+                            route.get("popularity").asDouble(),
+                            route.get("time").asDouble(),
                             TransportType.valueOf(route.get("transportType").asString())
                     );
                 }));
@@ -64,13 +101,14 @@ public class CityRepository {
         return findById(id, true);
     }
 
-    private Optional<City> findById(String id, boolean includeRoutes) {
+    public Optional<City> findById(String id, boolean includeRoutes) {
         Optional<City> city = client
                 .query("""
                     MATCH (city:City {id: $id})
                     OPTIONAL MATCH (city) -[toCountry:OF_COUNTRY]-> (country:Country)
                     OPTIONAL MATCH (city) -[route:ROUTE]-> (t)
-                    RETURN city, toCountry, country, collect(route) as routes, collect(t) as targetCity
+                    OPTIONAL MATCH (t) -[targetCityCountryRel:OF_COUNTRY]-> (targetCityCountry:Country)
+                    RETURN city, toCountry, country, collect(route) as routes, collect(t) as targetCity, collect(targetCityCountryRel) as targetCityCountryRel, collect(targetCityCountry) as targetCityCountry
                 """)
                 .bind(id).to("id")
                 .fetchAs(City.class)
@@ -80,7 +118,8 @@ public class CityRepository {
 
                     Set<Route> routes = Set.of();
                     if (!record.get("routes").asList().isEmpty() && includeRoutes) {
-                        routes = mapRoutes(typeSystem, record.get("routes"), record.get("targetCity"));
+                        Map<String, City> targetCitiesMap = mapTargetCitiesAndCountries(typeSystem, record.get("targetCity"), record.get("targetCityCountryRel"), record.get("targetCityCountry"));
+                        routes = mapRoutes(typeSystem, record.get("routes"), targetCitiesMap);
                     }
 
                     return new City(fetchedCity.getId(), fetchedCity.getName(), fetchedCity.getDescription(), fetchedCity.getCityMetrics(), routes, fetchedCitiesCountry);
@@ -89,13 +128,46 @@ public class CityRepository {
         return city;
     }
 
+    // This method returns a city and fetches all of its routes to cities that have a particular countryId
+    // If the origin city has no valid routes, then just the city is returned.
+    public Optional<City> findByIdFetchRoutesByCountryId(String id, String routesCountryId) {
+        Optional<City> city = client
+                .query("""
+                    MATCH (city:City {id: $id})
+                    MATCH (city) -[toCountry:OF_COUNTRY]-> (country:Country)
+                    OPTIONAL MATCH (city) -[route:ROUTE]-> (t)
+                    MATCH (t) -[toTargetCountry:OF_COUNTRY]-> (targetCountry:Country {id: $routesCountryId})
+                    RETURN city, toCountry, country, collect(route) as routes, collect(t) as targetCity, targetCountry
+                """)
+                .bind(id).to("id")
+                .bind(routesCountryId).to("routesCountryId")
+                .fetchAs(City.class)
+                .mappedBy((typeSystem, record) -> {
+                    City fetchedCity = cityMapper.apply(typeSystem, record.get("city").asNode());
+                    Country fetchedCitiesCountry = countryMapper.apply(typeSystem, record.get("country").asNode());
+                    Country targetCitiesCountry = countryMapper.apply(typeSystem, record.get("targetCountry").asNode());
+
+                    Set<Route> routes = Set.of();
+                    if (!record.get("routes").asList().isEmpty()) {
+                        Map<String, City> targetCitiesMap = mapTargetCities(typeSystem, record.get("targetCity"), targetCitiesCountry);
+                        routes = mapRoutes(typeSystem, record.get("routes"), targetCitiesMap);
+                    }
+
+                    return new City(fetchedCity.getId(), fetchedCity.getName(), fetchedCity.getDescription(), fetchedCity.getCityMetrics(), routes, fetchedCitiesCountry);
+                })
+                .first();
+        if (city.isPresent()) return city;
+        return findById(id);
+    }
+
     public Set<City> findAllCities() {
         Collection<City> allCities = client
                 .query("""
                     MATCH (city:City)
                     OPTIONAL MATCH (city)-[ofCountry:OF_COUNTRY]->(country)
                     OPTIONAL MATCH (city)-[route:ROUTE]->(t)
-                    RETURN city, ofCountry, country, collect(route) as routes, collect(t) as targetCity
+                    OPTIONAL MATCH (t) -[targetCityCountryRel:OF_COUNTRY]-> (targetCityCountry:Country)
+                    RETURN city, ofCountry, country, collect(route) as routes, collect(t) as targetCity, collect(targetCityCountryRel) as targetCityCountryRel, collect(targetCityCountry) as targetCityCountry
                 """)
                 .fetchAs(City.class)
                 .mappedBy((typeSystem, record) -> {
@@ -104,8 +176,10 @@ public class CityRepository {
 
                     Set<Route> routes = Set.of();
                     if (!record.get("routes").asList().isEmpty()) {
-                        routes = mapRoutes(typeSystem, record.get("routes"), record.get("targetCity"));
+                        Map<String, City> targetCitiesMap = mapTargetCitiesAndCountries(typeSystem, record.get("targetCity"), record.get("targetCityCountryRel"), record.get("targetCityCountry"));
+                        routes = mapRoutes(typeSystem, record.get("routes"), targetCitiesMap);
                     }
+
                     return new City(fetchedCity.getId(), fetchedCity.getName(), fetchedCity.getDescription(), fetchedCity.getCityMetrics(), routes, fetchedCitiesCountry);
                 })
                 .all();
@@ -118,7 +192,8 @@ public class CityRepository {
                     MATCH (city:City {name: $name})
                     OPTIONAL MATCH (city)-[ofCountry:OF_COUNTRY]->(country)
                     OPTIONAL MATCH (city)-[route:ROUTE]->(t)
-                    RETURN city, ofCountry, country, collect(route) as routes, collect(t) as targetCity
+                    OPTIONAL MATCH (t) -[targetCityCountryRel:OF_COUNTRY]-> (targetCityCountry:Country)
+                    RETURN city, ofCountry, country, collect(route) as routes, collect(t) as targetCity, collect(targetCityCountryRel) as targetCityCountryRel, collect(targetCityCountry) as targetCityCountry
                 """)
                 .bind(name).to("name")
                 .fetchAs(City.class)
@@ -128,8 +203,10 @@ public class CityRepository {
 
                     Set<Route> routes = Set.of();
                     if (!record.get("routes").asList().isEmpty()) {
-                        routes = mapRoutes(typeSystem, record.get("routes"), record.get("targetCity"));
+                        Map<String, City> targetCitiesMap = mapTargetCitiesAndCountries(typeSystem, record.get("targetCity"), record.get("targetCityCountryRel"), record.get("targetCityCountry"));
+                        routes = mapRoutes(typeSystem, record.get("routes"), targetCitiesMap);
                     }
+
                     return new City(fetchedCity.getId(), fetchedCity.getName(), fetchedCity.getDescription(), fetchedCity.getCityMetrics(), routes, fetchedCitiesCountry);
                 })
                 .first();
@@ -172,12 +249,12 @@ public class CityRepository {
             OPTIONAL MATCH (c)-[r:ROUTE {
                    transportType: routeData.transportType
             }]->(t)
-            WHERE r.popularity <> routeData.popularity OR r.weight <> routeData.weight
+            WHERE r.popularity <> routeData.popularity OR r.time <> routeData.time
             DELETE r
             
             MERGE (c)-[rel:ROUTE {
                 popularity: routeData.popularity,
-                weight: routeData.weight,
+                time: routeData.time,
                 transportType: routeData.transportType
             }]->(t)
             ON CREATE SET rel.id = randomUUID()

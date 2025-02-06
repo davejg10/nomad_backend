@@ -29,7 +29,19 @@ public class CityService {
         }
     }
 
-    public void createOrUpdateCity(City city) throws Exception {
+    public City getCityFetchRoutesWithCountryId(String id, String routesCountryId) throws NotFoundRequestException {
+        log.info("Fetching city with ID {}, only including routes with cities of country ID: {}", id, routesCountryId);
+        Optional<City> city = cityRepository.findByIdFetchRoutesByCountryId(id, routesCountryId);
+
+        if (city.isPresent()) {
+            return city.get();
+        } else {
+            log.warn("City with ID {} not found.", id);
+            throw new NotFoundRequestException("The city with ID: " + id + " was not found");
+        }
+    }
+
+    public void createOrUpdateCity(City city) {
         log.info("Creating city: {}", city);
         cityRepository.saveCityWithDepth0(city);
     }

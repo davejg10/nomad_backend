@@ -1,6 +1,5 @@
 package com.nomad.backend.city.domain;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.nomad.backend.config.CityMetricsSerializer;
 import com.nomad.backend.country.domain.Country;
@@ -56,12 +55,12 @@ public class City {
     }
 
     public City addRoute(Route route) {
-        return addRoute(route.getTargetCity(), route.getPopularity(), route.getWeight(), route.getTransportType());
+        return addRoute(route.getTargetCity(), route.getPopularity(), route.getTime(), route.getTransportType());
     }
 
-    public City addRoute(City targetCity, int popularity, int weight, TransportType transportType) {
+    public City addRoute(City targetCity, double popularity, double time, TransportType transportType) {
         Set<Route> existingRoutes = getRoutes();
-        Route routeToAdd = Route.of(targetCity, popularity, weight, transportType);
+        Route routeToAdd = Route.of(targetCity, popularity, time, transportType);
         log.info("Adding route: {}", routeToAdd);
 
         Optional<Route> route = existingRoutes.stream()
@@ -70,7 +69,7 @@ public class City {
 
         if (route.isPresent()) {
             Route existingRoute = route.get();
-            if (!Objects.equals(existingRoute.getPopularity(), popularity) || !Objects.equals(existingRoute.getWeight(), weight)) {
+            if (!Objects.equals(existingRoute.getPopularity(), popularity) || !Objects.equals(existingRoute.getTime(), time)) {
                 existingRoutes.remove(existingRoute);
                 existingRoutes.add(routeToAdd);
             }

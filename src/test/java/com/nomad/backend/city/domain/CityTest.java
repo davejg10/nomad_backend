@@ -28,7 +28,7 @@ public class CityTest {
         assertThat(city.getRoutes()).isEmpty();
 
         Route route = Route.of(targetCity, 2, 4, TransportType.BUS);
-        city = city.addRoute(route.getTargetCity(), route.getPopularity(), route.getWeight(), route.getTransportType());
+        city = city.addRoute(route.getTargetCity(), route.getPopularity(), route.getTime(), route.getTransportType());
 
         assertThat(city.getRoutes().size()).isEqualTo(1);
         assertThat(city.getRoutes()).contains(route);
@@ -42,12 +42,12 @@ public class CityTest {
         assertThat(city.getRoutes()).isEmpty();
 
         Route route = Route.of(targetCity, 2, 4, TransportType.BUS);
-        city = city.addRoute(route.getTargetCity(), route.getPopularity(), route.getWeight(), route.getTransportType());
+        city = city.addRoute(route.getTargetCity(), route.getPopularity(), route.getTime(), route.getTransportType());
 
         assertThat(city.getRoutes().size()).isEqualTo(1);
         assertThat(city.getRoutes()).contains(route);
 
-        city = city.addRoute(route.getTargetCity(), route.getPopularity(), route.getWeight(), route.getTransportType());
+        city = city.addRoute(route.getTargetCity(), route.getPopularity(), route.getTime(), route.getTransportType());
         assertThat(city.getRoutes().size()).isEqualTo(1);
         assertThat(city.getRoutes()).contains(route);
     }
@@ -60,14 +60,14 @@ public class CityTest {
         assertThat(city.getRoutes()).isEmpty();
 
         Route route = Route.of(targetCity, 2, 4, TransportType.BUS);
-        city = city.addRoute(route.getTargetCity(), route.getPopularity(), route.getWeight(), route.getTransportType());
+        city = city.addRoute(route.getTargetCity(), route.getPopularity(), route.getTime(), route.getTransportType());
 
         assertThat(city.getRoutes().size()).isEqualTo(1);
         assertThat(city.getRoutes()).contains(route);
 
         Route lessPopularRoute = Route.of(targetCity, 1, 4, TransportType.BUS);
 
-        city = city.addRoute(lessPopularRoute.getTargetCity(), lessPopularRoute.getPopularity(), lessPopularRoute.getWeight(), lessPopularRoute.getTransportType());
+        city = city.addRoute(lessPopularRoute.getTargetCity(), lessPopularRoute.getPopularity(), lessPopularRoute.getTime(), lessPopularRoute.getTransportType());
         assertThat(city.getRoutes().size()).isEqualTo(1);
         assertThat(city.getRoutes()).contains(lessPopularRoute);
     }

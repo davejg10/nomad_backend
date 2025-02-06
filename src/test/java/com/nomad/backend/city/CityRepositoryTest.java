@@ -36,17 +36,21 @@ public class CityRepositoryTest {
     private CountryRepository countryRepository;
 
     CityMetrics cityMetrics = new CityMetrics(
-            new CityMetric(CityCriteria.SAILING, 8),
-            new CityMetric(CityCriteria.FOOD, 5),
-            new CityMetric(CityCriteria.NIGHTLIFE, 4)
+            new CityMetric(CityCriteria.SAILING, 8.0),
+            new CityMetric(CityCriteria.FOOD, 5.4),
+            new CityMetric(CityCriteria.NIGHTLIFE, 4.3)
     );
 
-    Country country =  Country.of("CountryA", "", Set.of());
+    Country countryA =  Country.of("CountryA", "", Set.of());
+    Country countryB =  Country.of("CountryB", "", Set.of());
+
+    Country savedCountryA;
+    Country savedCountryB;
 
     String cityAName = "CityA";
     String cityBName = "CityB";
-    City cityA = City.of(cityAName, "", cityMetrics, Set.of(), country);
-    City cityB = City.of(cityBName, "", cityMetrics, Set.of(), country);
+    City cityA = City.of(cityAName, "", cityMetrics, Set.of(), countryA);
+    City cityB = City.of(cityBName, "", cityMetrics, Set.of(), countryA);
 
     Route routeAToB = Route.of(cityB, 4, 3, TransportType.BUS);
 
@@ -62,7 +66,8 @@ public class CityRepositoryTest {
         cityRepository = new CityRepository(client, objectMapper, schema);
         countryRepository = new CountryRepository(client, objectMapper, schema);
 
-        countryRepository.saveCountryWithDepth0(country);
+        savedCountryA = countryRepository.saveCountryWithDepth0(countryA);
+        savedCountryB = countryRepository.saveCountryWithDepth0(countryB);
     }
 
 
@@ -83,7 +88,7 @@ public class CityRepositoryTest {
         try {
             assertThat(city1)
                     .usingRecursiveComparison()
-                    .ignoringFields("id", "routes.id",  "routes.targetCity.id",  "routes.targetCity.routes", "routes.targetCity.country", "country.id")
+                    .ignoringFields("id", "routes.id",  "routes.targetCity.id",  "routes.targetCity.routes", "routes.targetCity.country.id", "country.id")
                     .isEqualTo(city2);
             return true;
         } catch (AssertionError e) {
@@ -143,7 +148,7 @@ public class CityRepositoryTest {
         assertThat(fetchedCity.getCountry())
                 .usingRecursiveComparison()
                 .ignoringFields("id", "cities")
-                .isEqualTo(country);
+                .isEqualTo(countryA);
     }
 
     @Test
@@ -177,22 +182,52 @@ public class CityRepositoryTest {
         assertThat(fetchedCityA.getCountry())
                 .usingRecursiveComparison()
                 .ignoringFields("id", "cities")
-                .isEqualTo(country);
+                .isEqualTo(countryA);
         assertThat(fetchedCityB.getCountry())
                 .usingRecursiveComparison()
                 .ignoringFields("id", "cities")
-                .isEqualTo(country);
+                .isEqualTo(countryA);
     }
 
     @Test
-    void findByIdFetchRoutes_shouldPopulateRoutesRelationship_whenCityHasRoutes() {
+    void findByIdFetchRoutes_shouldPopulateTargetCitiesCountryRelationship_always() {
         cityA = cityA.addRoute(routeAToB);
+        String cityCName = "CityC";
+        City cityC = City.of(cityCName, "", cityMetrics, Set.of(), countryB);
+        cityA = cityA.addRoute(Route.of(cityC, 4, 3, TransportType.BUS));
+
+        City createdCityA = cityRepository.saveCityWithDepth0(cityA);
+
+        City fetchedCityA = cityRepository.findByIdFetchRoutes(createdCityA.getId()).get();
+
+        City fetchedCityB = fetchedCityA.getRoutes().stream().filter(route -> route.getTargetCity().getName().equals(cityBName)).findFirst().get().getTargetCity();
+        City fetchedCityC = fetchedCityA.getRoutes().stream().filter(route -> route.getTargetCity().getName().equals(cityCName)).findFirst().get().getTargetCity();
+
+
+        assertThat(fetchedCityB.getCountry())
+                .usingRecursiveComparison()
+                .ignoringFields("id", "cities")
+                .isEqualTo(countryA);
+        assertThat(fetchedCityC.getCountry())
+                .usingRecursiveComparison()
+                .ignoringFields("id", "cities")
+                .isEqualTo(countryB);
+    }
+
+    @Test
+    void findByIdFetchRoutes_shouldPopulateRoutesRelationshipWithAllTargetCities_whenCityHasRoutes() {
+        City cityC = City.of("CityC", "", cityMetrics, Set.of(), countryB);
+        cityA = cityA.addRoute(routeAToB);
+        cityA = cityA.addRoute(Route.of(cityC, 4, 3, TransportType.BUS));
         City createdCity = cityRepository.saveCityWithDepth0(cityA);
 
         City fetchedCity = cityRepository.findByIdFetchRoutes(createdCity.getId()).get();
 
+        Set<String> routeTargetNames = fetchedCity.getRoutes().stream().map((route) -> route.getTargetCity().getName()).collect(Collectors.toSet());
         assertThat(areCitiesEqual(fetchedCity, cityA)).isTrue();
         assertThat(fetchedCity.getRoutes()).isNotEmpty();
+        assertThat(fetchedCity.getRoutes().size()).isEqualTo(2);
+        assertThat(routeTargetNames).containsAll(Set.of("CityB", "CityC"));
     }
 
     @Test
@@ -203,6 +238,95 @@ public class CityRepositoryTest {
 
         assertThat(areCitiesEqual(fetchedCity, cityA)).isTrue();
         assertThat(fetchedCity.getRoutes()).isEmpty();
+    }
+
+    @Test
+    void findByIdFetchRoutesByCountryId_shouldReturnEmptyOptionalOfCity_whenCityDoesntExist() {
+        String cityId = "notfound";
+
+        Optional<City> fetchedCity = cityRepository.findByIdFetchRoutesByCountryId(cityId, savedCountryA.getId());
+
+        assertThat(fetchedCity).isEmpty();
+    }
+
+    @Test
+    void findByIdFetchRoutesByCountryId_shouldReturnCity_whenCityExists() {
+        City createdCity = cityRepository.saveCityWithDepth0(cityA);
+
+        City fetchedCity = cityRepository.findByIdFetchRoutesByCountryId(createdCity.getId(), savedCountryA.getId()).get();
+
+        assertThat(areCitiesEqual(fetchedCity, cityA)).isTrue();
+    }
+
+    @Test
+    void findByIdFetchRoutesByCountryId_shouldPopulateCountryRelationship_always() {
+        cityA = cityA.addRoute(routeAToB);
+        City createdCityA = cityRepository.saveCityWithDepth0(cityA);
+        City createdCityB = cityRepository.saveCityWithDepth0(cityB);
+
+        City fetchedCityA = cityRepository.findByIdFetchRoutesByCountryId(createdCityA.getId(), savedCountryA.getId()).get();
+
+        City fetchedCityB = cityRepository.findByIdFetchRoutesByCountryId(createdCityB.getId(), savedCountryA.getId()).get();
+
+        assertThat(fetchedCityA.getCountry())
+                .usingRecursiveComparison()
+                .ignoringFields("id", "cities")
+                .isEqualTo(countryA);
+        assertThat(fetchedCityB.getCountry())
+                .usingRecursiveComparison()
+                .ignoringFields("id", "cities")
+                .isEqualTo(countryA);
+    }
+
+    @Test
+    void findByIdFetchRoutesByCountryId_shouldPopulateTargetCitiesCountryRelationship_always() {
+        cityA = cityA.addRoute(routeAToB);
+        City createdCityA = cityRepository.saveCityWithDepth0(cityA);
+
+        City fetchedCityA = cityRepository.findByIdFetchRoutesByCountryId(createdCityA.getId(), savedCountryA.getId()).get();
+
+        City fetchedCityB = fetchedCityA.getRoutes().stream().findFirst().get().getTargetCity();
+
+        assertThat(fetchedCityB.getCountry())
+                .usingRecursiveComparison()
+                .ignoringFields("id", "cities")
+                .isEqualTo(countryA);
+    }
+
+    @Test
+    void findByIdFetchRoutesByCountryId_shouldPopulateRoutesRelationship_onlyWithTargetCitiesLinkedToCountryId() {
+        City cityC = City.of("CityC", "", cityMetrics, Set.of(), countryB);
+        cityA = cityA.addRoute(routeAToB);
+        cityA = cityA.addRoute(Route.of(cityC, 4, 3, TransportType.BUS));
+        City createdCity = cityRepository.saveCityWithDepth0(cityA);
+
+        City fetchedCity = cityRepository.findByIdFetchRoutesByCountryId(createdCity.getId(), savedCountryA.getId()).get();
+
+        assertThat(fetchedCity.getRoutes().size()).isEqualTo(1);
+        assertThat(cityA.getRoutes().size()).isEqualTo(2);
+        assertThat(fetchedCity.getRoutes().stream().findFirst().get().getTargetCity().getName()).isEqualTo(cityBName);
+    }
+
+    @Test
+    void findByIdFetchRoutesByCountryId_shouldNotPopulateRoutesRelationship_whenCityDoesntHaveAnyRoutes() {
+        City createdCity = cityRepository.saveCityWithDepth0(cityA);
+
+        City fetchedCity = cityRepository.findByIdFetchRoutesByCountryId(createdCity.getId(), savedCountryA.getId()).get();
+
+        assertThat(areCitiesEqual(fetchedCity, cityA)).isTrue();
+        assertThat(fetchedCity.getRoutes()).isEmpty();
+    }
+
+    @Test
+    void findByIdFetchRoutesByCountryId_shouldNotPopulateRoutesRelationship_whenCityHasRoutesButNoneWithTargetCitiesLinkedToCountryId() {
+        City cityC = City.of("CityC", "", cityMetrics, Set.of(), countryB);
+        cityA = cityA.addRoute(Route.of(cityC, 4, 3, TransportType.BUS));
+        City createdCity = cityRepository.saveCityWithDepth0(cityA);
+
+        City fetchedCity = cityRepository.findByIdFetchRoutesByCountryId(createdCity.getId(), savedCountryA.getId()).get();
+
+        assertThat(fetchedCity.getRoutes().size()).isEqualTo(0);
+        assertThat(cityA.getRoutes().size()).isEqualTo(1);
     }
 
     @Test
@@ -253,7 +377,28 @@ public class CityRepositoryTest {
             assertThat(city.getCountry())
                     .usingRecursiveComparison()
                     .ignoringFields("id", "cities")
-                    .isEqualTo(country);
+                    .isEqualTo(countryA);
+        }
+    }
+
+    @Test
+    void findAllCities_shouldPopulateTargetCitiesCountriesRelationship_always() {
+        cityA = cityA.addRoute(routeAToB);
+        cityRepository.saveCityWithDepth0(cityA);
+        cityRepository.saveCityWithDepth0(cityB);
+
+        Set<City> allCities = cityRepository.findAllCities();
+        assertThat(allCities.size()).isEqualTo(2);
+        for (City city : allCities) {
+
+            assertThat(city.getCountry())
+                    .usingRecursiveComparison()
+                    .ignoringFields("id", "cities")
+                    .isEqualTo(countryA);
+
+            for (Route route : city.getRoutes()) {
+                assertThat(route.getTargetCity().getCountry()).isNotNull();
+            }
         }
     }
 
@@ -262,7 +407,7 @@ public class CityRepositoryTest {
         Set<City> allCities = cityRepository.findAllCities();
         String cityAId = cityRepository.saveCityWithDepth0(cityA).getId();
 
-        City createdCity = cityRepository.findById(cityAId).get();
+        City createdCity = cityRepository.findByIdFetchRoutes(cityAId).get();
 
         assertThat(allCities).isEmpty();
         assertThat(areCitiesEqual(createdCity, cityA)).isTrue();
@@ -270,7 +415,6 @@ public class CityRepositoryTest {
 
     @Test
     void saveCityWithDepth0_doesntRecreateCityNode_ifExist() {
-
         String firstSaveId = cityRepository.saveCityWithDepth0(cityA).getId();
         City cityAAfterFirstSave = cityRepository.findByIdFetchRoutes(firstSaveId).get();
 
@@ -290,9 +434,9 @@ public class CityRepositoryTest {
 
         String newDescription = "SomethingDifferent";
         CityMetrics newCityMetrics = new CityMetrics(
-                new CityMetric(CityCriteria.SAILING, 3),
-                new CityMetric(CityCriteria.FOOD, 4),
-                new CityMetric(CityCriteria.NIGHTLIFE, 3)
+                new CityMetric(CityCriteria.SAILING, 3.9),
+                new CityMetric(CityCriteria.FOOD, 4.6),
+                new CityMetric(CityCriteria.NIGHTLIFE, 3.3)
         );
         cityA = City.of(cityA.getName(), newDescription, newCityMetrics, cityA.getRoutes(), cityA.getCountry());
 
@@ -310,7 +454,7 @@ public class CityRepositoryTest {
         String cityAId = cityRepository.saveCityWithDepth0(cityA).getId();
         City createdCity = cityRepository.findByIdFetchRoutes(cityAId).get();
 
-        Country dbCountry = countryRepository.findByNameFetchCities(country.getName()).get();
+        Country dbCountry = countryRepository.findByIdFetchCities(savedCountryA.getId()).get();
 
         assertThat(createdCity.getCountry().getName()).isEqualTo(dbCountry.getName());
         assertThat(dbCountry.getCities().stream().findFirst().get())
@@ -326,7 +470,7 @@ public class CityRepositoryTest {
 
         String cityBId = fetchId(cityBName);
 
-        City createdCityB = cityRepository.findById(cityBId).get();
+        City createdCityB = cityRepository.findByIdFetchRoutes(cityBId).get();
 
         assertThat(createdCityB).isNotNull();
         assertThat(areCitiesEqual(createdCityB, cityB)).isTrue();
@@ -342,17 +486,17 @@ public class CityRepositoryTest {
 
         String newDescription = "SomethingDifferent";
         CityMetrics newCityMetrics = new CityMetrics(
-                new CityMetric(CityCriteria.SAILING, 3),
-                new CityMetric(CityCriteria.FOOD, 4),
-                new CityMetric(CityCriteria.NIGHTLIFE, 3)
+                new CityMetric(CityCriteria.SAILING, 3.4),
+                new CityMetric(CityCriteria.FOOD, 4.3),
+                new CityMetric(CityCriteria.NIGHTLIFE, 3.3)
         );
-        cityB = City.of(cityBName, newDescription, newCityMetrics, Set.of(), country);
+        cityB = City.of(cityB.getName(), newDescription, newCityMetrics, cityB.getRoutes(), cityB.getCountry());
         cityA = cityA.addRoute(Route.of(cityB, 3, 4, TransportType.BUS));
 
         cityRepository.saveCityWithDepth0(cityA).getId();
 
         String cityBId = fetchId(cityBName);
-        City cityBAfterSecondSave = cityRepository.findById(cityBId).get();
+        City cityBAfterSecondSave = cityRepository.findByIdFetchRoutes(cityBId).get();
 
         assertThat(cityBAfterFirstSave.getCityMetrics()).isEqualTo(cityBAfterSecondSave.getCityMetrics());
         assertThat(cityBAfterFirstSave.getDescription()).isEqualTo(cityBAfterSecondSave.getDescription());
@@ -365,8 +509,8 @@ public class CityRepositoryTest {
         cityRepository.saveCityWithDepth0(cityA).getId();
 
         String cityBId = fetchId(cityBName);
-        City createdCityB = cityRepository.findById(cityBId).get();
-        Country dbCountry = countryRepository.findByNameFetchCities(country.getName()).get();
+        City createdCityB = cityRepository.findByIdFetchRoutes(cityBId).get();
+        Country dbCountry = countryRepository.findByIdFetchCities(savedCountryA.getId()).get();
 
         assertThat(createdCityB.getCountry().getName()).isEqualTo(dbCountry.getName());
 
@@ -417,7 +561,7 @@ public class CityRepositoryTest {
         City cityAAfterFirstSave = cityRepository.saveCityWithDepth0(cityA);
 
         City cityAResetRoutes = City.of(cityA.getName(), cityA.getDescription(), cityA.getCityMetrics(), Set.of(), cityA.getCountry());
-        cityAResetRoutes = cityAResetRoutes.addRoute(Route.of(cityB, routeAToB.getPopularity() -1, routeAToB.getWeight(), routeAToB.getTransportType()));
+        cityAResetRoutes = cityAResetRoutes.addRoute(Route.of(cityB, routeAToB.getPopularity() -1, routeAToB.getTime(), routeAToB.getTransportType()));
         City cityAAfterSecondSave = cityRepository.saveCityWithDepth0(cityAResetRoutes);
 
         Route createdRouteAToBFirstSave = cityAAfterFirstSave.getRoutes().stream().findFirst().get();
@@ -429,12 +573,12 @@ public class CityRepositoryTest {
     }
 
     @Test
-    void saveCityWithDepth0_recreatesRouteRelationshipToTargetCityNode_ifTransportTypeIsSameAndWeightIsDifferent() {
+    void saveCityWithDepth0_recreatesRouteRelationshipToTargetCityNode_ifTransportTypeIsSameAndTimeIsDifferent() {
         cityA = cityA.addRoute(routeAToB);
         City cityAAfterFirstSave = cityRepository.saveCityWithDepth0(cityA);
 
         City cityAResetRoutes = City.of(cityA.getName(), cityA.getDescription(), cityA.getCityMetrics(), Set.of(), cityA.getCountry());
-        cityAResetRoutes = cityAResetRoutes.addRoute(Route.of(cityB, routeAToB.getPopularity(), routeAToB.getWeight() + 1, routeAToB.getTransportType()));
+        cityAResetRoutes = cityAResetRoutes.addRoute(Route.of(cityB, routeAToB.getPopularity(), routeAToB.getTime() + 1, routeAToB.getTransportType()));
         City cityAAfterSecondSave = cityRepository.saveCityWithDepth0(cityAResetRoutes);
 
         Route createdRouteAToBFirstSave = cityAAfterFirstSave.getRoutes().stream().findFirst().get();
@@ -442,16 +586,16 @@ public class CityRepositoryTest {
 
         assertThat(cityAAfterSecondSave.getRoutes().size()).isEqualTo(1);
         assertThat(createdRouteAToBFirstSave.getId()).isNotEqualTo(createdRouteAToBSecondSave.getId());
-        assertThat(createdRouteAToBSecondSave.getWeight()).isEqualTo(createdRouteAToBFirstSave.getWeight() + 1);
+        assertThat(createdRouteAToBSecondSave.getTime()).isEqualTo(createdRouteAToBFirstSave.getTime() + 1);
     }
 
     @Test
-    void saveCityWithDepth0_doesntRecreateRouteRelationshipToTargetCityNode_ifTransportTypeAndWeightAndPopularityAreSame() {
+    void saveCityWithDepth0_doesntRecreateRouteRelationshipToTargetCityNode_ifTransportTypeAndTimeAndPopularityAreSame() {
         cityA = cityA.addRoute(routeAToB);
         City cityAAfterFirstSave = cityRepository.saveCityWithDepth0(cityA);
 
         City cityAResetRoutes = City.of(cityA.getName(), cityA.getDescription(), cityA.getCityMetrics(), Set.of(), cityA.getCountry());
-        cityAResetRoutes = cityAResetRoutes.addRoute(Route.of(cityB, routeAToB.getPopularity(), routeAToB.getWeight(), routeAToB.getTransportType()));
+        cityAResetRoutes = cityAResetRoutes.addRoute(Route.of(cityB, routeAToB.getPopularity(), routeAToB.getTime(), routeAToB.getTransportType()));
         City cityAAfterSecondSave = cityRepository.saveCityWithDepth0(cityAResetRoutes);
 
         Route createdRouteAToBFirstSave = cityAAfterFirstSave.getRoutes().stream().findFirst().get();
@@ -480,7 +624,7 @@ public class CityRepositoryTest {
     @Test
     void saveCityWithDepth0_doesntTouchTargetCityRouteRelationships_ever() {
         String cityCName = "CityC";
-        City cityC = City.of(cityCName, "", cityMetrics, Set.of(), country);
+        City cityC = City.of(cityCName, "", cityMetrics, Set.of(), countryA);
         cityB = cityB.addRoute(cityC, 4, 3, TransportType.BUS);
 
         City cityBAfterFirstSave = cityRepository.saveCityWithDepth0(cityB);
@@ -493,7 +637,7 @@ public class CityRepositoryTest {
 
         String cityBId = fetchId(cityBName);
         City cityBAfterSecondSave = cityRepository.findByIdFetchRoutes(cityBId).get();
-        
+
         Set<City> allCities = cityRepository.findAllCities();
 
         assertThat(allCities.size()).isEqualTo(3);
@@ -507,17 +651,17 @@ public class CityRepositoryTest {
     @Test
     void mapifyCity_shouldRecursivelyStringifyCityMetricsFields() {
         CityMetrics cityAMetrics = new CityMetrics(
-                new CityMetric(CityCriteria.SAILING, 8),
-                new CityMetric(CityCriteria.FOOD, 5),
-                new CityMetric(CityCriteria.NIGHTLIFE, 4)
+                new CityMetric(CityCriteria.SAILING, 8.4),
+                new CityMetric(CityCriteria.FOOD, 5.4),
+                new CityMetric(CityCriteria.NIGHTLIFE, 4.3)
         );
         CityMetrics cityBMetrics = new CityMetrics(
-                new CityMetric(CityCriteria.SAILING, 4),
-                new CityMetric(CityCriteria.FOOD, 3),
-                new CityMetric(CityCriteria.NIGHTLIFE, 2)
+                new CityMetric(CityCriteria.SAILING, 4.3),
+                new CityMetric(CityCriteria.FOOD, 3.3),
+                new CityMetric(CityCriteria.NIGHTLIFE, 2.2)
         );
-        City cityA =  City.of("CityA", "", cityAMetrics, Set.of(), country);
-        City cityB =  City.of("CityB", "", cityBMetrics, Set.of(), country);
+        City cityA =  City.of("CityA", "", cityAMetrics, Set.of(), countryA);
+        City cityB =  City.of("CityB", "", cityBMetrics, Set.of(), countryA);
 
         cityA = cityA.addRoute(cityB, 4, 3, TransportType.BUS);
         Map<String, Object> mapifiedCity = cityRepository.mapifyCity(cityA);
@@ -529,8 +673,8 @@ public class CityRepositoryTest {
         LinkedHashMap<String, Object> cityBFetched = (LinkedHashMap<String, Object>) routeToB.get("targetCity");
         Object cityBCityMetrics = cityBFetched.get("cityMetrics");
 
-        assertThat(cityACityMetrics).isEqualTo("{\"sailing\":{\"criteria\":\"SAILING\",\"metric\":8},\"food\":{\"criteria\":\"FOOD\",\"metric\":5},\"nightlife\":{\"criteria\":\"NIGHTLIFE\",\"metric\":4}}");
-        assertThat(cityBCityMetrics).isEqualTo("{\"sailing\":{\"criteria\":\"SAILING\",\"metric\":4},\"food\":{\"criteria\":\"FOOD\",\"metric\":3},\"nightlife\":{\"criteria\":\"NIGHTLIFE\",\"metric\":2}}");
+        assertThat(cityACityMetrics).isEqualTo("{\"sailing\":{\"criteria\":\"SAILING\",\"metric\":8.4},\"food\":{\"criteria\":\"FOOD\",\"metric\":5.4},\"nightlife\":{\"criteria\":\"NIGHTLIFE\",\"metric\":4.3}}");
+        assertThat(cityBCityMetrics).isEqualTo("{\"sailing\":{\"criteria\":\"SAILING\",\"metric\":4.3},\"food\":{\"criteria\":\"FOOD\",\"metric\":3.3},\"nightlife\":{\"criteria\":\"NIGHTLIFE\",\"metric\":2.2}}");
     }
 
 }

@@ -123,64 +123,61 @@ public class CountryRepositoryTest {
     }
 
     @Test
-    void findByNameFetchCities_shouldReturnEmptyOptional_ifCountryDoesntExist() {
-        Optional<Country> createdCountryA = countryRepository.findByNameFetchCities(countryAName);
+    void findByIdFetchCities_shouldReturnEmptyOptional_ifCountryDoesntExist() {
+        Optional<Country> createdCountry = countryRepository.findByIdFetchCities("invalid");
 
-        assertThat(createdCountryA).isEmpty();
+        assertThat(createdCountry).isEmpty();
     }
 
     @Test
-    void findByNameFetchCities_shouldReturnCountry_ifCountryExists() {
-        countryRepository.saveCountryWithDepth0(countryA);
+    void findByIdFetchCities_shouldReturnCountry_ifCountryExists() {
+        Country createdCountry = countryRepository.saveCountryWithDepth0(countryA);
 
-        Country createdCountryA = countryRepository.findByNameFetchCities(countryAName).get();
+        createdCountry = countryRepository.findByIdFetchCities(createdCountry.getId()).get();
 
-        assertThat(areCountriesEqual(createdCountryA, countryA)).isTrue();
+        assertThat(areCountriesEqual(createdCountry, countryA)).isTrue();
     }
 
     @Test
-    void findByNameFetchCities_shouldPopulateCitiesRelationship_ifCountryHasCities() {
-        countryRepository.saveCountryWithDepth0(countryA);
+    void findByIdFetchCities_shouldPopulateCitiesRelationship_ifCountryHasCities() {
+        Country createdCountry = countryRepository.saveCountryWithDepth0(countryA);
         cityRepository.saveCityWithDepth0(cityA);
 
-        Country createdCountryA = countryRepository.findByNameFetchCities(countryAName).get();
+        createdCountry = countryRepository.findByIdFetchCities(createdCountry.getId()).get();
 
-        assertThat(createdCountryA.getCities()).isNotEmpty();
-        assertThat(createdCountryA.getCities().stream().findFirst().get())
+        assertThat(createdCountry.getCities()).isNotEmpty();
+        assertThat(createdCountry.getCities().stream().findFirst().get())
                 .usingRecursiveComparison()
-                .ignoringFields("id", "routes", "country")
+                .ignoringFields("id", "routes", "country.id")
                 .isEqualTo(cityA);
     }
 
     @Test
-    void findByNameFetchCities_shouldNotPopulateCitiesRelationship_ifCountryDoesntHaveCities() {
-        countryRepository.saveCountryWithDepth0(countryA);
+    void findByIdFetchCities_shouldNotPopulateCitiesRelationship_ifCountryDoesntHaveCities() {
+        Country createdCountry = countryRepository.saveCountryWithDepth0(countryA);
 
-        Country createdCountryA = countryRepository.findByNameFetchCities(countryAName).get();
+        createdCountry = countryRepository.findByIdFetchCities(createdCountry.getId()).get();
 
-        assertThat(areCountriesEqual(createdCountryA, countryA)).isTrue();
-        assertThat(createdCountryA.getCities()).isEmpty();
+        assertThat(areCountriesEqual(createdCountry, countryA)).isTrue();
+        assertThat(createdCountry.getCities()).isEmpty();
     }
 
 
     @Test
     void saveCountryWithDepth0_createsCountryNode_ifNotExist() {
         Set<Country> allCountries = countryRepository.findAllCountries();
-        countryRepository.saveCountryWithDepth0(countryA);
+        Country createdCountry = countryRepository.saveCountryWithDepth0(countryA);
 
-        Country createdCountryA = countryRepository.findByNameFetchCities(countryAName).get();
 
-        assertThat(areCountriesEqual(createdCountryA, countryA)).isTrue();
+        assertThat(areCountriesEqual(createdCountry, countryA)).isTrue();
         assertThat(allCountries).isEmpty();
     }
 
     @Test
     void saveCountryWithDepth0_doesntRecreateCountry_ifExist() {
-        countryRepository.saveCountryWithDepth0(countryA);
-        Country countryAFirstSave = countryRepository.findByNameFetchCities(countryAName).get();
+        Country countryAFirstSave = countryRepository.saveCountryWithDepth0(countryA);
 
-        countryRepository.saveCountryWithDepth0(countryA);
-        Country countryASecondSave = countryRepository.findByNameFetchCities(countryAName).get();
+        Country countryASecondSave = countryRepository.saveCountryWithDepth0(countryA);
 
         Set<Country> allCountries = countryRepository.findAllCountries();
 
@@ -190,12 +187,10 @@ public class CountryRepositoryTest {
 
     @Test
     void saveCountryWithDepth0_overwritesCountryDescription_ifExist() {
-        countryRepository.saveCountryWithDepth0(countryA);
-        Country countryAFirstSave = countryRepository.findByNameFetchCities(countryAName).get();
+        Country countryAFirstSave = countryRepository.saveCountryWithDepth0(countryA);
 
         Country countryADifferentDescription = Country.of(countryA.getName(), "new description", countryA.getCities());
-        countryRepository.saveCountryWithDepth0(countryADifferentDescription);
-        Country countryASecondSave = countryRepository.findByNameFetchCities(countryAName).get();
+        Country countryASecondSave = countryRepository.saveCountryWithDepth0(countryADifferentDescription);
 
         assertThat(countryAFirstSave.getId()).isEqualTo(countryASecondSave.getId());
         assertThat(countryAFirstSave.getDescription()).isNotEqualTo(countryASecondSave.getDescription());
@@ -211,9 +206,9 @@ public class CountryRepositoryTest {
         Set<City> allCitiesFirstSearch = cityRepository.findAllCities();
 
         CityMetrics newCityMetrics = new CityMetrics(
-                new CityMetric(CityCriteria.SAILING, 8),
-                new CityMetric(CityCriteria.FOOD, 5),
-                new CityMetric(CityCriteria.NIGHTLIFE, 4)
+                new CityMetric(CityCriteria.SAILING, 8.0),
+                new CityMetric(CityCriteria.FOOD, 5.4),
+                new CityMetric(CityCriteria.NIGHTLIFE, 4.3)
         );
         City cityADifferentProperties = City.of(cityA.getName(), "different description", newCityMetrics, Set.of(), countryA);
         City cityBDifferentProperties = City.of(cityB.getName(), "another different description", newCityMetrics, Set.of(Route.of(cityADifferentProperties, 4, 3, TransportType.BUS)), countryA);
