@@ -59,7 +59,7 @@ jobs:
         environment: [ dev ]
     environment: ${{ matrix.environment }}
     env:
-      WEB_APP_NAME: web-${{ matrix.environment }}-uks-nomad-01
+      WEB_APP_NAME: web-t-${{ matrix.environment }}-uks-nomad-01
       WEB_APP_RG_NAME: rg-${{ matrix.environment }}-uks-nomad-01
     steps:
       - name: Azure CLI Login
