@@ -20,8 +20,9 @@ A docker-compose.yml file has been created in the root directory. This compose f
 Now you are ready to use docker-compose:
 
 ```
-docker-compose up
+docker-compose up --build
 ```
+> Note; you can omit the --build flag if you don't want to re-build the image (which includes a mvn build).
 
 The application should now be running.
 
