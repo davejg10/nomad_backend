@@ -37,6 +37,7 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
+			<!-- Exclude this as we want to use log4j -->
 			<exclusions>
 				<exclusion>
 					<groupId>org.springframework.boot</groupId>
