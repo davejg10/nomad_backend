@@ -22,6 +22,8 @@ target/
 *.log
 ./logs
 
+/logs
+
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/
