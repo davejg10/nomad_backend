@@ -12,8 +12,9 @@ import java.util.Objects;
 public class BackendApplication {
 
 	public static void main(String[] args) {
+		SpringApplication app = new SpringApplication(BackendApplication.class);
+
 		String profile = System.getProperty("spring.profiles.active", "local");
-		log.info("In main method with Spring profile; {}", profile);
 
 		if (!Objects.equals(profile, "local")) {
 			log.info("Attaching application insights");
@@ -21,7 +22,7 @@ public class BackendApplication {
 
 			ApplicationInsights.attach();
 		}
-		SpringApplication.run(BackendApplication.class, args);
+		app.run(args);
 	}
 
 }
