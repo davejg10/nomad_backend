@@ -3,6 +3,7 @@ package com.nomad.backend.city;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nomad.backend.city.domain.*;
 import com.nomad.backend.country.domain.Country;
+import lombok.extern.log4j.Log4j2;
 import lombok.extern.slf4j.Slf4j;
 import org.neo4j.driver.Value;
 import org.neo4j.driver.types.MapAccessor;
@@ -15,7 +16,7 @@ import java.util.*;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
-@Slf4j
+@Log4j2
 @Configuration
 public class CityRepository {
 

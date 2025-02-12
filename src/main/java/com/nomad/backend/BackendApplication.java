@@ -8,7 +8,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class BackendApplication {
 
 	public static void main(String[] args) {
-		// Note; the application insights connectionstring is set as an environment variable in the web app.
+		// Note; the application insights connection string is set as an `APPLICATIONINSIGHTS_CONNECTION_STRING` environment variable.
 		ApplicationInsights.attach();
 		SpringApplication.run(BackendApplication.class, args);
 	}
