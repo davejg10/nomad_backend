@@ -9,6 +9,15 @@ In order to run the application the following tools need to be installed
 
 You can run the application in a number of ways;
 
+# Deploying the application
+
+You can deploy the application to a dev environment using the [.github/workflows/build_and_deploy.yml](.github/workflows/build_and_deploy.yml) workflow. This will build and push the image to the central ACR in the `devopsutils` Resource Group. It will then deploy this image to the Web App. For more information see; [confluence](https://goddard-smith.atlassian.net/wiki/spaces/nomad/pages/22020097/Platform)
+
+Requirements;
+1) The Nomad infrastructure must be deployed. See [confluence](https://goddard-smith.atlassian.net/wiki/spaces/nomad/pages/24739951/Deployment+steps)
+
+# Local development
+
 ### Using Docker-Compose
 
 A docker-compose.yml file has been created in the root directory. This compose file;
