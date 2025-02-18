@@ -51,7 +51,7 @@ public class CountryRepositoryTest {
     City cityA = City.of(cityAName, "", cityMetrics, Set.of(), countryA);
     City cityB = City.of(cityBName, "", cityMetrics, Set.of(), countryA);
 
-    Route routeAToB = Route.of(cityB, 4, 3, TransportType.BUS);
+    Route routeAToB = Route.of(cityB, 4, 3, 16.0, TransportType.BUS);
 
     @BeforeAll
     static void initializeNeo4j() {
@@ -212,7 +212,7 @@ public class CountryRepositoryTest {
                 new CityMetric(CityCriteria.NIGHTLIFE, 4.3)
         );
         City cityADifferentProperties = City.of(cityA.getName(), "different description", newCityMetrics, Set.of(), countryA);
-        City cityBDifferentProperties = City.of(cityB.getName(), "another different description", newCityMetrics, Set.of(Route.of(cityADifferentProperties, 4, 3, TransportType.BUS)), countryA);
+        City cityBDifferentProperties = City.of(cityB.getName(), "another different description", newCityMetrics, Set.of(Route.of(cityADifferentProperties, 4, 3, 16.0, TransportType.BUS)), countryA);
 
         Country countryAWithCities = Country.of(countryA.getName(), countryA.getDescription(), Set.of(cityADifferentProperties, cityBDifferentProperties));
         countryRepository.saveCountryWithDepth0(countryAWithCities);

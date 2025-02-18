@@ -55,12 +55,12 @@ public class City {
     }
 
     public City addRoute(Route route) {
-        return addRoute(route.getTargetCity(), route.getPopularity(), route.getTime(), route.getTransportType());
+        return addRoute(route.getTargetCity(), route.getPopularity(), route.getTime(), route.getCost(), route.getTransportType());
     }
 
-    public City addRoute(City targetCity, double popularity, double time, TransportType transportType) {
+    public City addRoute(City targetCity, double popularity, double time, double cost, TransportType transportType) {
         Set<Route> existingRoutes = getRoutes();
-        Route routeToAdd = Route.of(targetCity, popularity, time, transportType);
+        Route routeToAdd = Route.of(targetCity, popularity, time, cost, transportType);
         log.info("Adding route: {}", routeToAdd);
 
         Optional<Route> route = existingRoutes.stream()
@@ -69,7 +69,7 @@ public class City {
 
         if (route.isPresent()) {
             Route existingRoute = route.get();
-            if (!Objects.equals(existingRoute.getPopularity(), popularity) || !Objects.equals(existingRoute.getTime(), time)) {
+            if (!Objects.equals(existingRoute.getPopularity(), popularity) || !Objects.equals(existingRoute.getTime(), time) || !Objects.equals(existingRoute.getCost(), cost)) {
                 existingRoutes.remove(existingRoute);
                 existingRoutes.add(routeToAdd);
             }

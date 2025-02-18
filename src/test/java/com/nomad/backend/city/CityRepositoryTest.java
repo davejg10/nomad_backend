@@ -53,7 +53,7 @@ public class CityRepositoryTest {
     City cityA = City.of(cityAName, "", cityMetrics, Set.of(), countryA);
     City cityB = City.of(cityBName, "", cityMetrics, Set.of(), countryA);
 
-    Route routeAToB = Route.of(cityB, 4, 3, TransportType.BUS);
+    Route routeAToB = Route.of(cityB, 4, 3, 16.0,  TransportType.BUS);
 
     @BeforeAll
     static void initializeNeo4j() {
@@ -195,7 +195,7 @@ public class CityRepositoryTest {
         cityA = cityA.addRoute(routeAToB);
         String cityCName = "CityC";
         City cityC = City.of(cityCName, "", cityMetrics, Set.of(), countryB);
-        cityA = cityA.addRoute(Route.of(cityC, 4, 3, TransportType.BUS));
+        cityA = cityA.addRoute(Route.of(cityC, 4, 3, 30.0, TransportType.BUS));
 
         City createdCityA = cityRepository.saveCityWithDepth0(cityA);
 
@@ -219,7 +219,7 @@ public class CityRepositoryTest {
     void findByIdFetchRoutes_shouldPopulateRoutesRelationshipWithAllTargetCities_whenCityHasRoutes() {
         City cityC = City.of("CityC", "", cityMetrics, Set.of(), countryB);
         cityA = cityA.addRoute(routeAToB);
-        cityA = cityA.addRoute(Route.of(cityC, 4, 3, TransportType.BUS));
+        cityA = cityA.addRoute(Route.of(cityC, 4, 3, 30.0, TransportType.BUS));
         City createdCity = cityRepository.saveCityWithDepth0(cityA);
 
         City fetchedCity = cityRepository.findByIdFetchRoutes(createdCity.getId()).get();
@@ -298,7 +298,7 @@ public class CityRepositoryTest {
     void findByIdFetchRoutesByCountryId_shouldPopulateRoutesRelationship_onlyWithTargetCitiesLinkedToCountryId() {
         City cityC = City.of("CityC", "", cityMetrics, Set.of(), countryB);
         cityA = cityA.addRoute(routeAToB);
-        cityA = cityA.addRoute(Route.of(cityC, 4, 3, TransportType.BUS));
+        cityA = cityA.addRoute(Route.of(cityC, 4, 3, 30.0, TransportType.BUS));
         City createdCity = cityRepository.saveCityWithDepth0(cityA);
 
         City fetchedCity = cityRepository.findByIdFetchRoutesByCountryId(createdCity.getId(), savedCountryA.getId()).get();
@@ -321,7 +321,7 @@ public class CityRepositoryTest {
     @Test
     void findByIdFetchRoutesByCountryId_shouldNotPopulateRoutesRelationship_whenCityHasRoutesButNoneWithTargetCitiesLinkedToCountryId() {
         City cityC = City.of("CityC", "", cityMetrics, Set.of(), countryB);
-        cityA = cityA.addRoute(Route.of(cityC, 4, 3, TransportType.BUS));
+        cityA = cityA.addRoute(Route.of(cityC, 4, 3, 30.0, TransportType.BUS));
         City createdCity = cityRepository.saveCityWithDepth0(cityA);
 
         City fetchedCity = cityRepository.findByIdFetchRoutesByCountryId(createdCity.getId(), savedCountryA.getId()).get();
@@ -492,7 +492,7 @@ public class CityRepositoryTest {
                 new CityMetric(CityCriteria.NIGHTLIFE, 3.3)
         );
         cityB = City.of(cityB.getName(), newDescription, newCityMetrics, cityB.getRoutes(), cityB.getCountry());
-        cityA = cityA.addRoute(Route.of(cityB, 3, 4, TransportType.BUS));
+        cityA = cityA.addRoute(Route.of(cityB, 3, 4, 10.0, TransportType.BUS));
 
         cityRepository.saveCityWithDepth0(cityA).getId();
 
@@ -562,7 +562,7 @@ public class CityRepositoryTest {
         City cityAAfterFirstSave = cityRepository.saveCityWithDepth0(cityA);
 
         City cityAResetRoutes = City.of(cityA.getName(), cityA.getDescription(), cityA.getCityMetrics(), Set.of(), cityA.getCountry());
-        cityAResetRoutes = cityAResetRoutes.addRoute(Route.of(cityB, routeAToB.getPopularity() -1, routeAToB.getTime(), routeAToB.getTransportType()));
+        cityAResetRoutes = cityAResetRoutes.addRoute(Route.of(cityB, routeAToB.getPopularity() -1, routeAToB.getTime(), routeAToB.getCost(), routeAToB.getTransportType()));
         City cityAAfterSecondSave = cityRepository.saveCityWithDepth0(cityAResetRoutes);
 
         Route createdRouteAToBFirstSave = cityAAfterFirstSave.getRoutes().stream().findFirst().get();
@@ -579,7 +579,7 @@ public class CityRepositoryTest {
         City cityAAfterFirstSave = cityRepository.saveCityWithDepth0(cityA);
 
         City cityAResetRoutes = City.of(cityA.getName(), cityA.getDescription(), cityA.getCityMetrics(), Set.of(), cityA.getCountry());
-        cityAResetRoutes = cityAResetRoutes.addRoute(Route.of(cityB, routeAToB.getPopularity(), routeAToB.getTime() + 1, routeAToB.getTransportType()));
+        cityAResetRoutes = cityAResetRoutes.addRoute(Route.of(cityB, routeAToB.getPopularity(), routeAToB.getTime() + 1, routeAToB.getCost(), routeAToB.getTransportType()));
         City cityAAfterSecondSave = cityRepository.saveCityWithDepth0(cityAResetRoutes);
 
         Route createdRouteAToBFirstSave = cityAAfterFirstSave.getRoutes().stream().findFirst().get();
@@ -591,12 +591,29 @@ public class CityRepositoryTest {
     }
 
     @Test
-    void saveCityWithDepth0_doesntRecreateRouteRelationshipToTargetCityNode_ifTransportTypeAndTimeAndPopularityAreSame() {
+    void saveCityWithDepth0_recreatesRouteRelationshipToTargetCityNode_ifTransportTypeIsSameAndCostIsDifferent() {
         cityA = cityA.addRoute(routeAToB);
         City cityAAfterFirstSave = cityRepository.saveCityWithDepth0(cityA);
 
         City cityAResetRoutes = City.of(cityA.getName(), cityA.getDescription(), cityA.getCityMetrics(), Set.of(), cityA.getCountry());
-        cityAResetRoutes = cityAResetRoutes.addRoute(Route.of(cityB, routeAToB.getPopularity(), routeAToB.getTime(), routeAToB.getTransportType()));
+        cityAResetRoutes = cityAResetRoutes.addRoute(Route.of(cityB, routeAToB.getPopularity(), routeAToB.getTime(), routeAToB.getCost() + 5.0, routeAToB.getTransportType()));
+        City cityAAfterSecondSave = cityRepository.saveCityWithDepth0(cityAResetRoutes);
+
+        Route createdRouteAToBFirstSave = cityAAfterFirstSave.getRoutes().stream().findFirst().get();
+        Route createdRouteAToBSecondSave = cityAAfterSecondSave.getRoutes().stream().findFirst().get();
+
+        assertThat(cityAAfterSecondSave.getRoutes().size()).isEqualTo(1);
+        assertThat(createdRouteAToBFirstSave.getId()).isNotEqualTo(createdRouteAToBSecondSave.getId());
+        assertThat(createdRouteAToBSecondSave.getCost()).isEqualTo(createdRouteAToBFirstSave.getCost() + 5.0);
+    }
+
+    @Test
+    void saveCityWithDepth0_doesntRecreateRouteRelationshipToTargetCityNode_ifTransportTypeAndTimeAndPopularityAndCostAreSame() {
+        cityA = cityA.addRoute(routeAToB);
+        City cityAAfterFirstSave = cityRepository.saveCityWithDepth0(cityA);
+
+        City cityAResetRoutes = City.of(cityA.getName(), cityA.getDescription(), cityA.getCityMetrics(), Set.of(), cityA.getCountry());
+        cityAResetRoutes = cityAResetRoutes.addRoute(Route.of(cityB, routeAToB.getPopularity(), routeAToB.getTime(), routeAToB.getCost(), routeAToB.getTransportType()));
         City cityAAfterSecondSave = cityRepository.saveCityWithDepth0(cityAResetRoutes);
 
         Route createdRouteAToBFirstSave = cityAAfterFirstSave.getRoutes().stream().findFirst().get();
@@ -608,8 +625,8 @@ public class CityRepositoryTest {
 
     @Test
     void saveCityWithDepth0_createsARouteRelationshipToTargetCityForEachTransportType_ifThereAreTwoTransportTypeRoutes() {
-        cityA = cityA.addRoute(cityB, 4, 3, TransportType.BUS);
-        cityA = cityA.addRoute(cityB, 4, 3, TransportType.FLIGHT);
+        cityA = cityA.addRoute(cityB, 4, 3, 16.0, TransportType.BUS);
+        cityA = cityA.addRoute(cityB, 4, 3, 30.0, TransportType.FLIGHT);
         City createdCityA = cityRepository.saveCityWithDepth0(cityA);
 
         List<String> allTargetCities = createdCityA.getRoutes().stream().map(route -> route.getTargetCity().getName()).distinct().toList();
@@ -626,14 +643,14 @@ public class CityRepositoryTest {
     void saveCityWithDepth0_doesntTouchTargetCityRouteRelationships_ever() {
         String cityCName = "CityC";
         City cityC = City.of(cityCName, "", cityMetrics, Set.of(), countryA);
-        cityB = cityB.addRoute(cityC, 4, 3, TransportType.BUS);
+        cityB = cityB.addRoute(cityC, 4, 3, 5.0, TransportType.BUS);
 
         City cityBAfterFirstSave = cityRepository.saveCityWithDepth0(cityB);
         String cityCId = fetchId(cityCName);
         City cityCAfterFirstSave = cityRepository.findByIdFetchRoutes(cityCId).get();
 
         City cityBResetRoutes = City.of(cityBName, cityB.getDescription(), cityB.getCityMetrics(), Set.of(), cityB.getCountry());
-        cityA = cityA.addRoute(cityBResetRoutes, 4, 3, TransportType.BUS);
+        cityA = cityA.addRoute(cityBResetRoutes, 4, 3, 9.0, TransportType.BUS);
         City cityAAfterSecondSave = cityRepository.saveCityWithDepth0(cityA);
 
         String cityBId = fetchId(cityBName);
@@ -664,7 +681,7 @@ public class CityRepositoryTest {
         City cityA =  City.of("CityA", "", cityAMetrics, Set.of(), countryA);
         City cityB =  City.of("CityB", "", cityBMetrics, Set.of(), countryA);
 
-        cityA = cityA.addRoute(cityB, 4, 3, TransportType.BUS);
+        cityA = cityA.addRoute(cityB, 4, 3, 16.0, TransportType.BUS);
         Map<String, Object> mapifiedCity = cityRepository.mapifyCity(cityA);
 
         Object cityACityMetrics = mapifiedCity.get("cityMetrics");
