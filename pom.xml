@@ -55,14 +55,22 @@
 		</dependency>
 
 		<dependency>
-			<groupId>com.microsoft.azure</groupId>
-			<artifactId>applicationinsights-runtime-attach</artifactId>
-			<version>3.4.16</version>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-neo4j</artifactId>
 		</dependency>
+
+		<!-- Used for testing Neo4j repository. Creates an in-memory db	-->
 		<dependency>
-			<groupId>com.microsoft.azure</groupId>
-			<artifactId>applicationinsights-core</artifactId>
-			<version>3.6.2</version>
+			<groupId>org.neo4j.test</groupId>
+			<artifactId>neo4j-harness</artifactId>
+			<version>5.26.0</version>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-nop</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 	</dependencies>
 
