@@ -1,5 +1,5 @@
-name: deploy-to-web-app
-run-name: Deploy to Azure Web App
+name: build-and-deploy-to-web-app
+run-name: Build & Deploy to Azure Web App
 
 on:
   workflow_dispatch:
