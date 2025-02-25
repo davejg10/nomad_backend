@@ -70,7 +70,6 @@ jobs:
         id: fetch_profile
         run: |
           PUBLISH_PROFILE=$(az webapp deployment list-publishing-profiles --name ${{ env.WEB_APP_NAME }} --resource-group ${{ env.WEB_APP_RG_NAME }} --xml)
-          echo $PUBLISH_PROFILE
           echo "::add-mask::$PUBLISH_PROFILE"
           echo "PUBLISH_PROFILE=$PUBLISH_PROFILE" >> $GITHUB_ENV
 
