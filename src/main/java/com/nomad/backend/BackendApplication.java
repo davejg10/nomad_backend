@@ -1,24 +1,27 @@
 package com.nomad.backend;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.neo4j.cypherdsl.core.renderer.Configuration;
-import org.neo4j.cypherdsl.core.renderer.Dialect;
-import org.neo4j.driver.AuthTokens;
-import org.neo4j.driver.Driver;
-import org.neo4j.driver.GraphDatabase;
+import com.microsoft.applicationinsights.attach.ApplicationInsights;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
-import org.springframework.data.neo4j.core.Neo4jClient;
-import org.springframework.data.neo4j.core.ReactiveNeo4jClient;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.core.env.Environment;
+
+import java.util.Objects;
 
 @SpringBootApplication
+@Log4j2
 public class BackendApplication {
 
 	public static void main(String[] args) {
-//		some change
-		SpringApplication.run(BackendApplication.class, args);
+		Environment environment = SpringApplication.run(BackendApplication.class, args).getEnvironment();
+
+		String profile = environment.getProperty("spring.profiles.active", "local");
+
+		if (!Objects.equals(profile, "local")) {
+			log.info("Attaching application insights");
+			// Note; the application insights connection string is set as `APPLICATIONINSIGHTS_CONNECTION_STRING` environment variable.
+			ApplicationInsights.attach();
+		}
 	}
 
 }
