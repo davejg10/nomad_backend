@@ -47,4 +47,4 @@ jobs:
         with:
           app-name: ${{ env.WEB_APP_NAME }}
           publish-profile: ${{ env.PUBLISH_PROFILE }}
-          images: '${{ env.ACR_SERVER_NAME }}/${{ env.REPOSITORY_NAME }}:${{ github.event.inputs.environment }}'
+          images: '${{ env.ACR_SERVER_NAME }}/${{ env.REPOSITORY_NAME }}:${{ github.event.inputs.tag }}'
