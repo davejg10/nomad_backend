@@ -1,0 +1,50 @@
+name: deploy-to-web-app
+run-name: Deploy to Azure Web App
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        type: string
+        description: Which tag do you want to deploy?
+        default: latest
+        required: true
+
+env:
+  ACR_SERVER_NAME: acrglbuksdevopsutils.azurecr.io
+  REPOSITORY_NAME: nomad
+
+permissions:
+  id-token: write
+
+jobs:
+  deploy_to_web_app:
+    runs-on: self-hosted
+    strategy:
+      matrix:
+        environment: [ dev ]
+    environment: ${{ matrix.environment }}
+    env:
+      WEB_APP_NAME: web-t-${{ matrix.environment }}-uks-nomad-01
+      WEB_APP_RG_NAME: rg-${{ matrix.environment }}-uks-nomad-01
+    steps:
+      - name: Azure CLI Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Fetch web-app publish-profile
+        id: fetch_profile
+        run: |
+          PUBLISH_PROFILE=$(az webapp deployment list-publishing-profiles --name ${{ env.WEB_APP_NAME }} --resource-group ${{ env.WEB_APP_RG_NAME }} --xml)
+          echo "::add-mask::$PUBLISH_PROFILE"
+          echo "PUBLISH_PROFILE=$PUBLISH_PROFILE" >> $GITHUB_ENV
+
+      - name: Azure WebApp
+        uses: Azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.WEB_APP_NAME }}
+          publish-profile: ${{ env.PUBLISH_PROFILE }}
+          images: '${{ env.ACR_SERVER_NAME }}/${{ env.REPOSITORY_NAME }}:${{ github.event.inputs.tag }}'

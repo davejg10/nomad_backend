@@ -22,11 +22,11 @@ class LoadDatabase {
     CommandLineRunner initDatabase(CityService cityService, CityRepository cityRepository, CountryRepository countryRepository) {
 
         return args -> {
-            Country countryA = Country.of("CountryA", "", Set.of());
+            Country countryA = Country.of("Thailand", "", Set.of());
             Country countryB = Country.of("B", "", Set.of());
 
             countryRepository.saveCountryWithDepth0(countryA);
-            countryRepository.saveCountryWithDepth0(countryB);
+//            countryRepository.saveCountryWithDepth0(countryB);
 
 
             Random random = new Random();
@@ -39,24 +39,24 @@ class LoadDatabase {
                     ))
                     .toList();
 
-            City cityA = City.of("CityA", "", cityMetrics.get(0), Set.of(), countryA);
-            City cityB = City.of("CityB", "", cityMetrics.get(1), Set.of(), countryA);
-            City cityC = City.of("CityC", "", cityMetrics.get(2), Set.of(), countryB);
-            City cityD = City.of("CityD", "", cityMetrics.get(3), Set.of(), countryA);
-            City cityE = City.of("CityE", "", cityMetrics.get(4), Set.of(), countryA);
+            City cityA = City.of("Bangkok", "", cityMetrics.get(0), Set.of(), countryA);
+            City cityB = City.of("Pai", "", cityMetrics.get(1), Set.of(), countryA);
+            City cityC = City.of("Chiang-Mai", "", cityMetrics.get(2), Set.of(), countryA);
+            City cityD = City.of("Phuket", "", cityMetrics.get(3), Set.of(), countryA);
+            City cityE = City.of("Koh-Samui", "", cityMetrics.get(4), Set.of(), countryA);
 
-            cityA = cityA.addRoute(cityB, 3.0, 2.5, TransportType.BUS);
-
-            cityB = cityB.addRoute(cityC, 2.0, 2.4, TransportType.FLIGHT);
-            cityB = cityB.addRoute(cityC, 2.0, 3.0, TransportType.BUS);
-            cityB = cityB.addRoute(cityD, 1.0, 2.2, TransportType.BUS);
-
-            cityC = cityC.addRoute(cityE, 1.0, 1.4, TransportType.BUS);
-            cityC = cityC.addRoute(cityD, 1.0, 2.3, TransportType.BUS);
-
-            cityD = cityD.addRoute(cityE, 0.0, 1.3, TransportType.BUS);
-
-            cityE = cityE.addRoute(cityC, 1.0, 1.0, TransportType.BUS);
+//            cityA = cityA.addRoute(cityB, 3.0, 2.5, TransportType.BUS);
+//
+//            cityB = cityB.addRoute(cityC, 2.0, 2.4, TransportType.FLIGHT);
+//            cityB = cityB.addRoute(cityC, 2.0, 3.0, TransportType.BUS);
+//            cityB = cityB.addRoute(cityD, 1.0, 2.2, TransportType.BUS);
+//
+//            cityC = cityC.addRoute(cityE, 1.0, 1.4, TransportType.BUS);
+//            cityC = cityC.addRoute(cityD, 1.0, 2.3, TransportType.BUS);
+//
+//            cityD = cityD.addRoute(cityE, 0.0, 1.3, TransportType.BUS);
+//
+//            cityE = cityE.addRoute(cityC, 1.0, 1.0, TransportType.BUS);
 
             cityService.createOrUpdateCity(cityA);
             cityService.createOrUpdateCity(cityB);

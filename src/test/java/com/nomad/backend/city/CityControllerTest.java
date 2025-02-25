@@ -73,7 +73,7 @@ public class CityControllerTest {
 
     @Test
     void getCityFetchRoutesWithCountryId_shouldReturn200_whenCityExists() throws Exception {
-        cityA.addRoute(cityB, 3, 4, TransportType.BUS);
+        cityA.addRoute(cityB, 3, 4, 16.0, TransportType.BUS);
 
         Mockito.when(cityService.getCityFetchRoutesWithCountryId(cityAId, countryId)).thenReturn(cityA);
         mockMvc.perform(get(String.format("/cities/%s/routes/%s", cityAId, countryId)))

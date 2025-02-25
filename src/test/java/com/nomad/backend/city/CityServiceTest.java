@@ -43,7 +43,7 @@ public class CityServiceTest {
 
     @Test
     void getCity_shouldReturnCity_whenCityExists() {
-        City cityAWithRoute = cityA.addRoute(cityB, 3, 4, TransportType.BUS);
+        City cityAWithRoute = cityA.addRoute(cityB, 3, 4, 16.0, TransportType.BUS);
         Mockito.when(cityRepository.findById(cityAId)).thenReturn(Optional.of(cityA));
         Mockito.when(cityRepository.findByIdFetchRoutes(cityAId)).thenReturn(Optional.of(cityAWithRoute));
 
@@ -71,7 +71,7 @@ public class CityServiceTest {
 
     @Test
     void getCityFetchRoutesWithCountryId_shouldReturnCity_whenCityExists() {
-        cityA = cityA.addRoute(cityB, 3, 4, TransportType.BUS);
+        cityA = cityA.addRoute(cityB, 3, 4, 16.0, TransportType.BUS);
         Mockito.when(cityRepository.findByIdFetchRoutesByCountryId(cityAId, countryId)).thenReturn(Optional.of(cityA));
 
         City returnedCity = cityService.getCityFetchRoutesWithCountryId(cityAId, countryId);

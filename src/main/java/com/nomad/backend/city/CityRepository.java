@@ -86,6 +86,7 @@ public class CityRepository {
                             targetCitiesMap.get(endNodeElementId),
                             route.get("popularity").asDouble(),
                             route.get("time").asDouble(),
+                            route.get("cost").asDouble(),
                             TransportType.valueOf(route.get("transportType").asString())
                     );
                 }));
@@ -249,12 +250,13 @@ public class CityRepository {
             OPTIONAL MATCH (c)-[r:ROUTE {
                    transportType: routeData.transportType
             }]->(t)
-            WHERE r.popularity <> routeData.popularity OR r.time <> routeData.time
+            WHERE r.popularity <> routeData.popularity OR r.time <> routeData.time OR r.cost <> routeData.cost
             DELETE r
             
             MERGE (c)-[rel:ROUTE {
                 popularity: routeData.popularity,
                 time: routeData.time,
+                cost: routeData.cost,
                 transportType: routeData.transportType
             }]->(t)
             ON CREATE SET rel.id = randomUUID()
