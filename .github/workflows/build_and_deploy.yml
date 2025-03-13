@@ -17,7 +17,7 @@ permissions:
 
 jobs:
   dockerize:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     environment: dev
     outputs:
       POM_VERSION_TAG: ${{ steps.pom_version.outputs.POM_VERSION_TAG }}

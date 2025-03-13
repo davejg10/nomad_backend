@@ -17,6 +17,7 @@
 
 	<properties>
 		<java.version>21</java.version>
+		<version.nomad.data_library>1.0-SNAPSHOT</version.nomad.data_library>
 	</properties>
 
 	<dependencies>
@@ -40,7 +41,15 @@
 		<dependency>
 			<groupId>com.nomad.multi</groupId>
 			<artifactId>data_library</artifactId>
-			<version>1.0-SNAPSHOT</version>
+			<version>${version.nomad.data_library}</version>
+		</dependency>
+		<!-- This brings in our Neo4jTestConfigurationClass but only when testing  -->
+		<dependency> 
+			<groupId>com.nomad.multi</groupId>
+			<artifactId>data_library</artifactId>
+			<version>${version.nomad.data_library}</version>
+			<type>test-jar</type>
+			<scope>test</scope>
 		</dependency>
 
 		<dependency>
@@ -90,6 +99,9 @@
 		</plugins>
 	</build>
 
+	<!-- Silly but below is a github PAT token classic (with JUST package:read) which has been XML encoded so that Github doest auto remove it -->
+	<!-- This allows us to read our custom Maven packages deployed to nomad-data-services	-->
+	<!-- For more see https://github.com/orgs/community/discussions/26634 -->
 	<repositories>
 		<repository>
 			<id>github-public</id>

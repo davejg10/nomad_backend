@@ -1,8 +1,12 @@
 package com.nomad.backend.city;
 
-import com.nomad.backend.city.domain.*;
-import com.nomad.backend.country.domain.Country;
+
 import com.nomad.backend.exceptions.NotFoundRequestException;
+import com.nomad.data_library.Neo4jTestGenerator;
+import com.nomad.data_library.domain.CityMetrics;
+import com.nomad.data_library.domain.neo4j.Neo4jCity;
+import com.nomad.data_library.domain.neo4j.Neo4jCountry;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -12,6 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -19,35 +24,36 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-public class CityServiceTest {
+public class Neo4jCityServiceTest {
 
     @Mock
-    private CityRepository cityRepository;
+    private Neo4jCityRepository cityRepository;
 
     @InjectMocks
-    private CityService cityService;
+    private Neo4jCityService cityService;
 
     String countryId = "f1f9416f-0e7c-447c-938c-5d39cf10dad3";
-    Country country = new Country(countryId, "CountryA", "", Set.of());
-
-    String cityAId = "1226a656-0450-4156-a522-4ae588caa937";
-    String cityBId = "f19c59be-a9b1-4fa4-a96c-e11f2bb111c0";
+    Neo4jCountry country = new Neo4jCountry(countryId, "CountryA", Set.of());
+    
+    String cityAId = UUID.randomUUID().toString();
+    String cityBId = UUID.randomUUID().toString();
 
     String cityAName = "CityA";
     String cityBName = "CityB";
+
     @Mock
     CityMetrics cityMetrics;
 
-    City cityA = new City(cityAId, cityAName, "", cityMetrics, Set.of(), country);
-    City cityB = new City(cityBId, cityBName, "", cityMetrics, Set.of(), country);
+    Neo4jCity cityA = new Neo4jCity(cityAId, cityAName, cityMetrics, Set.of(), country);
+    Neo4jCity cityB = new Neo4jCity(cityBId, cityBName, cityMetrics, Set.of(), country);
 
     @Test
     void getCity_shouldReturnCity_whenCityExists() {
-        City cityAWithRoute = cityA.addRoute(cityB, 3, 4, 16.0, TransportType.BUS);
+        Neo4jCity cityAWithRoute = cityA.addRoute(Neo4jTestGenerator.neo4jRoute(cityB));
         Mockito.when(cityRepository.findById(cityAId)).thenReturn(Optional.of(cityA));
         Mockito.when(cityRepository.findByIdFetchRoutes(cityAId)).thenReturn(Optional.of(cityAWithRoute));
 
-        City returnedCity = cityService.getCity(cityAId, false);
+        Neo4jCity returnedCity = cityService.getCity(cityAId, false);
         assertThat(returnedCity).isEqualTo(cityA);
 
         returnedCity = cityService.getCity(cityAId, true);
@@ -71,10 +77,10 @@ public class CityServiceTest {
 
     @Test
     void getCityFetchRoutesWithCountryId_shouldReturnCity_whenCityExists() {
-        cityA = cityA.addRoute(cityB, 3, 4, 16.0, TransportType.BUS);
+        cityA = cityA.addRoute(Neo4jTestGenerator.neo4jRoute(cityB));
         Mockito.when(cityRepository.findByIdFetchRoutesByCountryId(cityAId, countryId)).thenReturn(Optional.of(cityA));
 
-        City returnedCity = cityService.getCityFetchRoutesWithCountryId(cityAId, countryId);
+        Neo4jCity returnedCity = cityService.getCityFetchRoutesWithCountryId(cityAId, countryId);
 
         assertThat(returnedCity).isEqualTo(cityA);
     }

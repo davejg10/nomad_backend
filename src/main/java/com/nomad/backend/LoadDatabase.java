@@ -1,9 +1,12 @@
 package com.nomad.backend;
 
-import com.nomad.backend.city.*;
-import com.nomad.backend.city.domain.*;
-import com.nomad.backend.country.CountryRepository;
-import com.nomad.backend.country.domain.Country;
+import com.nomad.data_library.domain.*;
+import com.nomad.backend.city.Neo4jCityRepository;
+import com.nomad.backend.city.Neo4jCityService;
+import com.nomad.backend.country.Neo4jCountryRepository;
+import com.nomad.data_library.domain.neo4j.Neo4jCity;
+import com.nomad.data_library.domain.neo4j.Neo4jCountry;
+
 import lombok.extern.log4j.Log4j2;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
@@ -19,19 +22,20 @@ import java.util.stream.IntStream;
 class LoadDatabase {
 
     @Bean
-    CommandLineRunner initDatabase(CityService cityService, CityRepository cityRepository, CountryRepository countryRepository) {
+    CommandLineRunner initDatabase(Neo4jCityService neo4jCityService, Neo4jCityRepository neo4jCityRepository, Neo4jCountryRepository neo4jCountryRepository) {
 
         return args -> {
-            Country countryA = Country.of("Thailand", "", Set.of());
-            Country countryB = Country.of("B", "", Set.of());
+            
+            Neo4jCountry neo4jCountryA = Neo4jCountry.of("Thailand", "", Set.of());
+            Neo4jCountry neo4jCountryB = Neo4jCountry.of("B", "", Set.of());
 
-            countryRepository.saveCountryWithDepth0(countryA);
-//            countryRepository.saveCountryWithDepth0(countryB);
+            neo4jCountryRepository.createCountry(neo4jCountryA);
+//            neo4jCountryRepository.createCountry(neo4jCountryB);
 
 
             Random random = new Random();
 
-            List<CityMetrics> cityMetrics = IntStream.range(0, 5).boxed()
+            List<CityMetrics> Neo4jCityMetrics = IntStream.range(0, 5).boxed()
                     .map(i  -> new CityMetrics(
                             new CityMetric(CityCriteria.SAILING, random.nextDouble(11)),
                             new CityMetric(CityCriteria.FOOD, random.nextDouble(11)),
@@ -39,32 +43,32 @@ class LoadDatabase {
                     ))
                     .toList();
 
-            City cityA = City.of("Bangkok", "", cityMetrics.get(0), Set.of(), countryA);
-            City cityB = City.of("Pai", "", cityMetrics.get(1), Set.of(), countryA);
-            City cityC = City.of("Chiang-Mai", "", cityMetrics.get(2), Set.of(), countryA);
-            City cityD = City.of("Phuket", "", cityMetrics.get(3), Set.of(), countryA);
-            City cityE = City.of("Koh-Samui", "", cityMetrics.get(4), Set.of(), countryA);
+            Neo4jCity neo4jCityA = Neo4jCity.of("Bangkok", Neo4jCityMetrics.get(0), Set.of(), neo4jCountryA);
+            Neo4jCity neo4jCityB = Neo4jCity.of("Pai", Neo4jCityMetrics.get(1), Set.of(), neo4jCountryA);
+            Neo4jCity neo4jCityC = Neo4jCity.of("Chiang-Mai", Neo4jCityMetrics.get(2), Set.of(), neo4jCountryA);
+            Neo4jCity neo4jCityD = Neo4jCity.of("Phuket", Neo4jCityMetrics.get(3), Set.of(), neo4jCountryA);
+            Neo4jCity neo4jCityE = Neo4jCity.of("Koh-Samui", Neo4jCityMetrics.get(4), Set.of(), neo4jCountryA);
 
-//            cityA = cityA.addRoute(cityB, 3.0, 2.5, TransportType.BUS);
+//            Neo4jCityA = Neo4jCityA.addRoute(Neo4jCityB, 3.0, 2.5, TransportType.BUS);
 //
-//            cityB = cityB.addRoute(cityC, 2.0, 2.4, TransportType.FLIGHT);
-//            cityB = cityB.addRoute(cityC, 2.0, 3.0, TransportType.BUS);
-//            cityB = cityB.addRoute(cityD, 1.0, 2.2, TransportType.BUS);
+//            Neo4jCityB = Neo4jCityB.addRoute(Neo4jCityC, 2.0, 2.4, TransportType.FLIGHT);
+//            Neo4jCityB = Neo4jCityB.addRoute(Neo4jCityC, 2.0, 3.0, TransportType.BUS);
+//            Neo4jCityB = Neo4jCityB.addRoute(Neo4jCityD, 1.0, 2.2, TransportType.BUS);
 //
-//            cityC = cityC.addRoute(cityE, 1.0, 1.4, TransportType.BUS);
-//            cityC = cityC.addRoute(cityD, 1.0, 2.3, TransportType.BUS);
+//            Neo4jCityC = Neo4jCityC.addRoute(Neo4jCityE, 1.0, 1.4, TransportType.BUS);
+//            Neo4jCityC = Neo4jCityC.addRoute(Neo4jCityD, 1.0, 2.3, TransportType.BUS);
 //
-//            cityD = cityD.addRoute(cityE, 0.0, 1.3, TransportType.BUS);
+//            Neo4jCityD = Neo4jCityD.addRoute(Neo4jCityE, 0.0, 1.3, TransportType.BUS);
 //
-//            cityE = cityE.addRoute(cityC, 1.0, 1.0, TransportType.BUS);
+//            Neo4jCityE = Neo4jCityE.addRoute(Neo4jCityC, 1.0, 1.0, TransportType.BUS);
 
-            cityService.createOrUpdateCity(cityA);
-            cityService.createOrUpdateCity(cityB);
+            neo4jCityService.createOrUpdateCity(neo4jCityA);
+            neo4jCityService.createOrUpdateCity(neo4jCityB);
 
-            cityService.createOrUpdateCity(cityB);
-            cityService.createOrUpdateCity(cityC);
-            cityService.createOrUpdateCity(cityD);
-            cityService.createOrUpdateCity(cityE);
+            neo4jCityService.createOrUpdateCity(neo4jCityB);
+            neo4jCityService.createOrUpdateCity(neo4jCityC);
+            neo4jCityService.createOrUpdateCity(neo4jCityD);
+            neo4jCityService.createOrUpdateCity(neo4jCityE);
 
         };
     }

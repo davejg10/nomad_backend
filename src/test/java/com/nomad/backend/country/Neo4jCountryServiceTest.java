@@ -1,8 +1,11 @@
 package com.nomad.backend.country;
 
-import com.nomad.backend.city.domain.*;
-import com.nomad.backend.country.domain.Country;
 import com.nomad.backend.exceptions.NotFoundRequestException;
+import com.nomad.data_library.Neo4jTestGenerator;
+import com.nomad.data_library.domain.CityMetrics;
+import com.nomad.data_library.domain.neo4j.Neo4jCity;
+import com.nomad.data_library.domain.neo4j.Neo4jCountry;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -12,37 +15,35 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(MockitoExtension.class)
-public class CountryServiceTest {
+public class Neo4jCountryServiceTest {
 
     @Mock
-    private CountryRepository countryRepository;
+    private Neo4jCountryRepository countryRepository;
 
     @InjectMocks
-    private CountryService countryService;
+    private Neo4jCountryService countryService;
 
     String cityAName = "CityA";
     String cityBName = "CityB";
 
-    @Mock
-    CityMetrics cityMetrics;
-
-    City cityA = City.of(cityAName, "", cityMetrics, Set.of(), null);
-    City cityB = City.of(cityBName, "", cityMetrics, Set.of(), null);
+    Neo4jCity cityA = Neo4jTestGenerator.neo4jCityNoRoutes(cityAName, null);
+    Neo4jCity cityB = Neo4jTestGenerator.neo4jCityNoRoutes(cityBName, null);
 
     String countryName = "CountryA";
-    String countryId = "1226a656-0450-4156-a522-4ae588caa937";
-    Country country = new Country(countryId, countryName, "", Set.of(cityA, cityB));
-
+    String countryId = UUID.randomUUID().toString();
+    Neo4jCountry country = new Neo4jCountry(countryId, countryName, Set.of(cityA, cityB));
+    
     @Test
     void findAllCountries_shouldReturnAllCountries() {
         Mockito.when(countryRepository.findAllCountries()).thenReturn(Set.of(country));
 
-        Set<Country> allCountries = countryService.findAllCountries();
+        Set<Neo4jCountry> allCountries = countryService.findAllCountries();
 
         assertThat(allCountries).isEqualTo(Set.of(country));
     }
@@ -51,16 +52,16 @@ public class CountryServiceTest {
     void getCitiesGivenCountry_shouldReturnACountriesSetOfCities_whenGivenAValidCountryId() {
         Mockito.when(countryRepository.findByIdFetchCities(countryId)).thenReturn(Optional.of(country));
 
-        Set<City> allCities = countryService.getCitiesGivenCountry(countryId);
+        Set<Neo4jCity> allCities = countryService.getCitiesGivenCountry(countryId);
 
         assertThat(allCities).isEqualTo(Set.of(cityA, cityB));
     }
 
     @Test
     void getCitiesGivenCountry_shouldReturnEmptySet_whenGivenAValidIdForACountryWithNoCities() {
-        Mockito.when(countryRepository.findByIdFetchCities(countryId)).thenReturn(Optional.of(new Country(country.getId(), country.getName(), country.getDescription(), Set.of())));
+        Mockito.when(countryRepository.findByIdFetchCities(countryId)).thenReturn(Optional.of(new Neo4jCountry(country.getId(), country.getName(), Set.of())));
 
-        Set<City> allCities = countryService.getCitiesGivenCountry(countryId);
+        Set<Neo4jCity> allCities = countryService.getCitiesGivenCountry(countryId);
 
         assertThat(allCities).isEmpty();
     }
