@@ -26,8 +26,8 @@ class LoadDatabase {
 
         return args -> {
             
-            Neo4jCountry neo4jCountryA = Neo4jCountry.of("Thailand", "", Set.of());
-            Neo4jCountry neo4jCountryB = Neo4jCountry.of("B", "", Set.of());
+            Neo4jCountry neo4jCountryA = Neo4jCountry.of("Thailand", Set.of());
+            Neo4jCountry neo4jCountryB = Neo4jCountry.of("B", Set.of());
 
             neo4jCountryRepository.createCountry(neo4jCountryA);
 //            neo4jCountryRepository.createCountry(neo4jCountryB);

@@ -43,6 +43,6 @@ public class Neo4jCityService {
 
     public void createOrUpdateCity(Neo4jCity city) {
         log.info("Creating Neo4jCity: {}", city);
-        neo4jCityRepository.saveNeo4jCityWithDepth0(city);
+        neo4jCityRepository.saveCityWithDepth0(city);
     }
 }
