@@ -85,10 +85,10 @@ public class CountryRepository {
 
         Country createdCountry = client
                 .query("""
-                    MERGE (country:Country {name: $name})
-                    ON CREATE SET country.id = randomUUID()
-                    SET country.description = $description
-                    RETURN country
+                        MERGE (country:Country {name: $name})
+                        ON CREATE SET country.id = randomUUID()
+                        SET country.description = $description
+                        RETURN country
                 """)
                 .bindAll(countryAsMap)
                 .fetchAs(Country.class)
