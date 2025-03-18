@@ -37,7 +37,7 @@ public class Neo4jCountryServiceTest {
 
     String countryName = "CountryA";
     String countryId = UUID.randomUUID().toString();
-    Neo4jCountry country = new Neo4jCountry(countryId, countryName, Set.of(cityA, cityB));
+    Neo4jCountry country = new Neo4jCountry(countryId, countryName, "short desc", "blob:url", Set.of(cityA, cityB));
     
     @Test
     void findAllCountries_shouldReturnAllCountries() {
@@ -59,7 +59,7 @@ public class Neo4jCountryServiceTest {
 
     @Test
     void getCitiesGivenCountry_shouldReturnEmptySet_whenGivenAValidIdForACountryWithNoCities() {
-        Mockito.when(countryRepository.findByIdFetchCities(countryId)).thenReturn(Optional.of(new Neo4jCountry(country.getId(), country.getName(), Set.of())));
+        Mockito.when(countryRepository.findByIdFetchCities(countryId)).thenReturn(Optional.of(Neo4jTestGenerator.neo4jCountryNoCities(countryName).withId(countryId)));
 
         Set<Neo4jCity> allCities = countryService.getCitiesGivenCountry(countryId);
 

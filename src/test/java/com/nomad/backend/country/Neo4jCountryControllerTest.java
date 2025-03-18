@@ -41,7 +41,7 @@ public class Neo4jCountryControllerTest {
     Neo4jCity cityA = Neo4jTestGenerator.neo4jCityNoRoutes("CityA", null);
     Neo4jCity cityB = Neo4jTestGenerator.neo4jCityNoRoutes("CityB", null);
 
-    Neo4jCountry countryA = new Neo4jCountry(countryAId, countryAName, Set.of(cityA, cityB));
+    Neo4jCountry countryA = new Neo4jCountry(countryAId, countryAName, "short desc", "blob:url", Set.of(cityA, cityB));
     Neo4jCountry countryB = Neo4jTestGenerator.neo4jCountryNoCities(countryBName);
 
     @Test

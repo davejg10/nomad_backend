@@ -40,9 +40,4 @@ public class Neo4jCityService {
             throw new NotFoundRequestException("The Neo4jCity with ID: " + id + " was not found");
         }
     }
-
-    public void createOrUpdateCity(Neo4jCity city) {
-        log.info("Creating Neo4jCity: {}", city);
-        neo4jCityRepository.saveCityWithDepth0(city);
-    }
 }

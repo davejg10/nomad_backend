@@ -34,14 +34,13 @@ public class Neo4jCityControllerTest {
     private ObjectMapper objectMapper;
 
     String countryId = "f1f9416f-0e7c-447c-938c-5d39cf10dad3";
-    Neo4jCountry country = new Neo4jCountry(countryId, "CountryA", Set.of());
+    Neo4jCountry country = Neo4jTestGenerator.neo4jCountryNoCities("CountryA").withId(countryId);
 
     String cityAId = "1226a656-0450-4156-a522-4ae588caa937";
     String cityBId = "f19c59be-a9b1-4fa4-a96c-e11f2bb111c0";
 
-    
-    Neo4jCity cityA = new Neo4jCity(cityAId, "CityA", GenericTestGenerator.cityMetrics(), Set.of(), country);
-    Neo4jCity cityB = new Neo4jCity(cityBId, "CityB", GenericTestGenerator.cityMetrics(), Set.of(), country);
+    Neo4jCity cityA = Neo4jTestGenerator.neo4jCityNoRoutesWithId(cityAId, "CityA", country);
+    Neo4jCity cityB =  Neo4jTestGenerator.neo4jCityNoRoutesWithId(cityBId, "CityB", country);
 
     @Test
     void getCity_shouldReturn200_whenCityExists() throws Exception {
