@@ -3,7 +3,6 @@ package com.nomad.backend.city;
 
 import com.nomad.backend.exceptions.NotFoundRequestException;
 import com.nomad.data_library.Neo4jTestGenerator;
-import com.nomad.data_library.domain.CityMetrics;
 import com.nomad.data_library.domain.neo4j.Neo4jCity;
 import com.nomad.data_library.domain.neo4j.Neo4jCountry;
 
@@ -40,10 +39,7 @@ public class Neo4jCityServiceTest {
 
     String cityAName = "CityA";
     String cityBName = "CityB";
-
-    @Mock
-    CityMetrics cityMetrics;
-
+    
     Neo4jCity cityA = Neo4jTestGenerator.neo4jCityNoRoutesWithId(cityAId, "CityA", country);
     Neo4jCity cityB =  Neo4jTestGenerator.neo4jCityNoRoutesWithId(cityBId, "CityB", country);
 

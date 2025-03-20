@@ -1,5 +1,7 @@
 package com.nomad.backend.city;
 
+import java.math.BigDecimal;
+import java.time.Duration;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -9,7 +11,7 @@ import org.neo4j.driver.types.TypeSystem;
 import org.springframework.data.neo4j.core.mapping.Neo4jMappingContext;
 import org.springframework.stereotype.Component;
 
-import com.nomad.data_library.domain.TransportType;
+import com.nomad.common_utils.domain.TransportType;
 import com.nomad.data_library.domain.neo4j.Neo4jCity;
 import com.nomad.data_library.domain.neo4j.Neo4jCountry;
 import com.nomad.data_library.domain.neo4j.Neo4jRoute;
@@ -56,8 +58,8 @@ public class Neo4jCityMappers extends Neo4jCommonCityMappers {
                     route.get("id").asString(),
                     cityMapper.apply(typeSystem, targetCities.get(index.getAndIncrement()).asNode()).withCountry(citiesCountry),
                     route.get("popularity").asDouble(),
-                    route.get("time").asDouble(),
-                    route.get("cost").asDouble(),
+                    Duration.parse(route.get("averageDuration").asString()),
+                    new BigDecimal(route.get("averageCost").asString()),
                     TransportType.valueOf(route.get("transportType").asString())
         )));
     }

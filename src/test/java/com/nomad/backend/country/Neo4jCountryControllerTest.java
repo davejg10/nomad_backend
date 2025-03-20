@@ -3,7 +3,6 @@ package com.nomad.backend.country;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nomad.backend.exceptions.NotFoundRequestException;
 import com.nomad.data_library.Neo4jTestGenerator;
-import com.nomad.data_library.domain.CityMetrics;
 import com.nomad.data_library.domain.neo4j.Neo4jCity;
 import com.nomad.data_library.domain.neo4j.Neo4jCountry;
 
