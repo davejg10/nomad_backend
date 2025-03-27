@@ -1,4 +1,4 @@
-package com.nomad.backend.city;
+package com.nomad.backend.city.neo4j;
 
 import java.math.BigDecimal;
 import java.time.Duration;

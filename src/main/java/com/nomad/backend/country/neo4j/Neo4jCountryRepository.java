@@ -1,4 +1,4 @@
-package com.nomad.backend.country;
+package com.nomad.backend.country.neo4j;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nomad.data_library.repositories.Neo4jCommonCountryMappers;

@@ -1,4 +1,4 @@
-package com.nomad.backend.country;
+package com.nomad.backend.country.neo4j;
 
 import com.nomad.data_library.domain.neo4j.Neo4jCity;
 import com.nomad.data_library.domain.neo4j.Neo4jCountry;

@@ -1,6 +1,8 @@
 package com.nomad.backend.city;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nomad.backend.city.neo4j.Neo4jCityController;
+import com.nomad.backend.city.neo4j.Neo4jCityService;
 import com.nomad.backend.exceptions.NotFoundRequestException;
 import com.nomad.data_library.GenericTestGenerator;
 import com.nomad.data_library.Neo4jTestGenerator;
@@ -33,8 +35,8 @@ public class Neo4jCityControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    String countryId = "f1f9416f-0e7c-447c-938c-5d39cf10dad3";
-    Neo4jCountry country = Neo4jTestGenerator.neo4jCountryNoCities("CountryA").withId(countryId);
+    String targetCountryId = "f1f9416f-0e7c-447c-938c-5d39cf10dad3";
+    Neo4jCountry country = Neo4jTestGenerator.neo4jCountryNoCities("CountryA").withId(targetCountryId);
 
     String cityAId = "1226a656-0450-4156-a522-4ae588caa937";
     String cityBId = "f19c59be-a9b1-4fa4-a96c-e11f2bb111c0";
@@ -43,14 +45,14 @@ public class Neo4jCityControllerTest {
     Neo4jCity cityB =  Neo4jTestGenerator.neo4jCityNoRoutesWithId(cityBId, "CityB", country);
 
     @Test
-    void getCity_shouldReturn200_whenCityExists() throws Exception {
-        Mockito.when(cityService.getCity(cityAId, true)).thenReturn(cityA);
+    void findById_shouldReturn200_whenCityExists() throws Exception {
+        Mockito.when(cityService.findById(cityAId, true)).thenReturn(cityA);
         mockMvc.perform(get(String.format("/neo4jCities/%s", cityAId))
                         .param("includeRoutes", "true"))
                 .andExpect(status().isOk())
                 .andReturn();
 
-        Mockito.when(cityService.getCity(cityAId, false)).thenReturn(cityA);
+        Mockito.when(cityService.findById(cityAId, false)).thenReturn(cityA);
         mockMvc.perform(get(String.format("/neo4jCities/%s", cityAId))
                         .param("includeRoutes", "false"))
                 .andExpect(status().isOk())
@@ -58,9 +60,9 @@ public class Neo4jCityControllerTest {
     }
 
     @Test
-    void getCity_shouldReturn404_whenCityNotFound() throws Exception {
+    void findById_shouldReturn404_whenCityNotFound() throws Exception {
 
-        Mockito.when(cityService.getCity(cityAId, true)).thenThrow(new NotFoundRequestException("City not found"));
+        Mockito.when(cityService.findById(cityAId, true)).thenThrow(new NotFoundRequestException("City not found"));
 
         MvcResult mvcResult = mockMvc.perform(get(String.format("/neo4jCities/%s", cityAId))
                         .param("includeRoutes", "true"))
@@ -70,21 +72,21 @@ public class Neo4jCityControllerTest {
     }
 
     @Test
-    void getCityFetchRoutesWithCountryId_shouldReturn200_whenCityExists() throws Exception {
+    void findByIdFetchRoutesByTargetCityCountryId_shouldReturn200_whenCityExists() throws Exception {
         cityA.addRoute(Neo4jTestGenerator.neo4jRoute(cityB));
 
-        Mockito.when(cityService.getCityFetchRoutesWithCountryId(cityAId, countryId)).thenReturn(cityA);
-        mockMvc.perform(get(String.format("/neo4jCities/%s/routes/%s", cityAId, countryId)))
+        Mockito.when(cityService.findByIdFetchRoutesByTargetCityCountryId(cityAId, targetCountryId)).thenReturn(cityA);
+        mockMvc.perform(get(String.format("/neo4jCities/%s/routes", cityAId)).param("targetCityCountryId", targetCountryId))
                 .andExpect(status().isOk())
                 .andReturn();
     }
 
     @Test
-    void getCityFetchRoutesWithCountryId_shouldReturn404_whenCityNotFound() throws Exception {
+    void findByIdFetchRoutesByTargetCityCountryId_shouldReturn404_whenCityNotFound() throws Exception {
 
-        Mockito.when(cityService.getCityFetchRoutesWithCountryId(cityAId, countryId)).thenThrow(new NotFoundRequestException("City not found"));
+        Mockito.when(cityService.findByIdFetchRoutesByTargetCityCountryId(cityAId, targetCountryId)).thenThrow(new NotFoundRequestException("City not found"));
 
-        MvcResult mvcResult = mockMvc.perform(get(String.format("/neo4jCities/%s/routes/%s", cityAId, countryId)))
+        mockMvc.perform(get(String.format("/neo4jCities/%s/routes", cityAId)).param("targetCityCountryId", targetCountryId))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string("City not found"))
                 .andReturn();

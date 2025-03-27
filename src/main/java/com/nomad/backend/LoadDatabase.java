@@ -1,9 +1,9 @@
 package com.nomad.backend;
 
 import com.nomad.data_library.domain.*;
-import com.nomad.backend.city.Neo4jCityRepository;
-import com.nomad.backend.city.Neo4jCityService;
-import com.nomad.backend.country.Neo4jCountryRepository;
+import com.nomad.backend.city.neo4j.Neo4jCityRepository;
+import com.nomad.backend.city.neo4j.Neo4jCityService;
+import com.nomad.backend.country.neo4j.Neo4jCountryRepository;
 import com.nomad.common_utils.domain.TransportType;
 import com.nomad.data_library.domain.neo4j.Neo4jCity;
 import com.nomad.data_library.domain.neo4j.Neo4jCountry;

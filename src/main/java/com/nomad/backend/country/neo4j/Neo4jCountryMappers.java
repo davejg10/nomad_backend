@@ -1,4 +1,4 @@
-package com.nomad.backend.country;
+package com.nomad.backend.country.neo4j;
 
 import org.springframework.data.neo4j.core.mapping.Neo4jMappingContext;
 import org.springframework.stereotype.Component;

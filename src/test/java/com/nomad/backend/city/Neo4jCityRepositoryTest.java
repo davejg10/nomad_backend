@@ -2,10 +2,13 @@ package com.nomad.backend.city;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nomad.backend.TestConfig;
-import com.nomad.backend.country.Neo4jCountryRepository;
+import com.nomad.backend.city.neo4j.Neo4jCityMappers;
+import com.nomad.backend.city.neo4j.Neo4jCityRepository;
+import com.nomad.backend.country.neo4j.Neo4jCountryRepository;
 import com.nomad.data_library.Neo4jTestConfiguration;
 import com.nomad.data_library.Neo4jTestGenerator;
 import com.nomad.data_library.config.Neo4jConfig;
+import com.nomad.data_library.domain.CityCriteria;
 import com.nomad.data_library.domain.neo4j.Neo4jCity;
 import com.nomad.data_library.domain.neo4j.Neo4jCountry;
 import com.nomad.data_library.domain.neo4j.Neo4jRoute;
@@ -61,44 +64,44 @@ public class Neo4jCityRepositoryTest {
     }
 
     @Test
-    void findByIdFetchRoutesByCountryId_shouldReturnEmptyOptionalOfCity_whenCityDoesntExist() {
+    void findByIdFetchRoutesByTargetCityCountryId_shouldReturnEmptyOptionalOfCity_whenCityDoesntExist() {
         String cityId = "notfound";
 
-        Optional<Neo4jCity> fetchedCity = cityRepository.findByIdFetchRoutesByCountryId(cityId, savedCountryA.getId());
+        Optional<Neo4jCity> fetchedCity = cityRepository.findByIdFetchRoutesByTargetCityCountryId(cityId, savedCountryA.getId());
 
         assertThat(fetchedCity).isEmpty();
     }
 
     @Test
-    void findByIdFetchRoutesByCountryId_shouldReturnCity_whenCityExists() {
+    void findByIdFetchRoutesByTargetCityCountryId_shouldReturnCity_whenCityExists() {
         cityRepository.createCity(cityA);
 
-        Neo4jCity fetchedCity = cityRepository.findByIdFetchRoutesByCountryId(cityA.getId(), savedCountryA.getId()).get();
+        Neo4jCity fetchedCity = cityRepository.findByIdFetchRoutesByTargetCityCountryId(cityA.getId(), savedCountryA.getId()).get();
 
         assertThat(fetchedCity).isEqualTo(cityA);
     }
 
     @Test
-    void findByIdFetchRoutesByCountryId_shouldPopulateCountryRelationship_always() {
+    void findByIdFetchRoutesByTargetCityCountryId_shouldPopulateCountryRelationship_always() {
         cityRepository.createCity(cityA);
         cityRepository.createCity(cityB);
 
-        Neo4jCity fetchedCityA = cityRepository.findByIdFetchRoutesByCountryId(cityA.getId(), savedCountryA.getId()).get();
+        Neo4jCity fetchedCityA = cityRepository.findByIdFetchRoutesByTargetCityCountryId(cityA.getId(), savedCountryA.getId()).get();
 
-        Neo4jCity fetchedCityB = cityRepository.findByIdFetchRoutesByCountryId(cityB.getId(), savedCountryA.getId()).get();
+        Neo4jCity fetchedCityB = cityRepository.findByIdFetchRoutesByTargetCityCountryId(cityB.getId(), savedCountryA.getId()).get();
 
         assertThat(fetchedCityA.getCountry()).isEqualTo(countryA);
         assertThat(fetchedCityB.getCountry()).isEqualTo(countryA);
     }
 
     @Test
-    void findByIdFetchRoutesByCountryId_shouldPopulateTargetCitiesCountryRelationship_always() {
+    void findByIdFetchRoutesByTargetCityCountryId_shouldPopulateTargetCitiesCountryRelationship_always() {
         cityRepository.createCity(cityA);
         cityRepository.createCity(cityB);
         cityA = cityA.addRoute(routeAToB);
         cityRepository.saveRoute(cityA);
 
-        Neo4jCity fetchedCityA = cityRepository.findByIdFetchRoutesByCountryId(cityA.getId(), savedCountryA.getId()).get();
+        Neo4jCity fetchedCityA = cityRepository.findByIdFetchRoutesByTargetCityCountryId(cityA.getId(), savedCountryA.getId()).get();
 
         Neo4jCity fetchedCityB = fetchedCityA.getRoutes().stream().findFirst().get().getTargetCity();
 
@@ -106,7 +109,7 @@ public class Neo4jCityRepositoryTest {
     }
 
     @Test
-    void findByIdFetchRoutesByCountryId_shouldPopulateRoutesRelationship_onlyWithTargetCitiesLinkedToCountryId() {
+    void findByIdFetchRoutesByTargetCityCountryId_shouldPopulateRoutesRelationship_onlyWithTargetCitiesLinkedToCountryId() {
         Neo4jCity cityC = Neo4jTestGenerator.neo4jCityNoRoutes("CityC", countryB);
         cityRepository.createCity(cityA);
         cityRepository.createCity(cityB);
@@ -115,7 +118,7 @@ public class Neo4jCityRepositoryTest {
         cityA = cityA.addRoute(Neo4jTestGenerator.neo4jRoute(cityC));
         cityRepository.saveRoute(cityA);
 
-        Neo4jCity fetchedCity = cityRepository.findByIdFetchRoutesByCountryId(cityA.getId(), savedCountryA.getId()).get();
+        Neo4jCity fetchedCity = cityRepository.findByIdFetchRoutesByTargetCityCountryId(cityA.getId(), savedCountryA.getId()).get();
 
         assertThat(fetchedCity.getRoutes().size()).isEqualTo(1);
         assertThat(cityA.getRoutes().size()).isEqualTo(2);
@@ -123,28 +126,65 @@ public class Neo4jCityRepositoryTest {
     }
 
     @Test
-    void findByIdFetchRoutesByCountryId_shouldNotPopulateRoutesRelationship_whenCityDoesntHaveAnyRoutes() {
+    void findByIdFetchRoutesByTargetCityCountryId_shouldNotPopulateRoutesRelationship_whenCityDoesntHaveAnyRoutes() {
         cityRepository.createCity(cityA);
 
-        Neo4jCity fetchedCity = cityRepository.findByIdFetchRoutesByCountryId(cityA.getId(), savedCountryA.getId()).get();
+        Neo4jCity fetchedCity = cityRepository.findByIdFetchRoutesByTargetCityCountryId(cityA.getId(), savedCountryA.getId()).get();
 
         assertThat(fetchedCity).isEqualTo(cityA);
         assertThat(fetchedCity.getRoutes()).isEmpty();
     }
 
     @Test
-    void findByIdFetchRoutesByCountryId_shouldNotPopulateRoutesRelationship_whenCityHasRoutesButNoneWithTargetCitiesLinkedToCountryId() {
+    void findByIdFetchRoutesByTargetCityCountryId_shouldNotPopulateRoutesRelationship_whenCityHasRoutesButNoneWithTargetCitiesLinkedToCountryId() {
         Neo4jCity cityC = Neo4jTestGenerator.neo4jCityNoRoutes("CityC", countryB);
         cityRepository.createCity(cityA);
         cityRepository.createCity(cityC);
         cityA = cityA.addRoute(Neo4jTestGenerator.neo4jRoute(cityC));
         cityRepository.saveRoute(cityA);
 
-        Neo4jCity fetchedCity = cityRepository.findByIdFetchRoutesByCountryId(cityA.getId(), savedCountryA.getId()).get();
+        Neo4jCity fetchedCity = cityRepository.findByIdFetchRoutesByTargetCityCountryId(cityA.getId(), savedCountryA.getId()).get();
 
         assertThat(fetchedCity.getRoutes().size()).isEqualTo(0);
         assertThat(cityA.getRoutes().size()).isEqualTo(1);
     }
+    
+     @Test
+     void findByIdAndCountryIdOrderByPreferences_shouldReturnCityWithRoutesInOrder() {
+         Neo4jCity cityC = Neo4jTestGenerator.neo4jCityNoRoutes("CityC", countryA);
+         Neo4jCity cityD = Neo4jTestGenerator.neo4jCityNoRoutes("CityD", countryA);
+         Neo4jCity cityE = Neo4jTestGenerator.neo4jCityNoRoutes("CityE", countryA);
+
+         Neo4jCity createdCityA = cityRepository.createCity(cityA);
+         cityRepository.createCity(cityB);
+         cityRepository.createCity(cityC);
+         cityRepository.createCity(cityD);
+         cityRepository.createCity(cityE);
+
+         Neo4jRoute toB = Neo4jTestGenerator.neo4jRoute(cityB);
+         Neo4jRoute toB2 = Neo4jTestGenerator.neo4jRoute(cityB);
+         Neo4jRoute toB3 = Neo4jTestGenerator.neo4jRoute(cityB);
+
+         Neo4jRoute toC = Neo4jTestGenerator.neo4jRoute(cityC);
+         Neo4jRoute toD = Neo4jTestGenerator.neo4jRoute(cityD);
+         Neo4jRoute toE = Neo4jTestGenerator.neo4jRoute(cityE);
+         createdCityA = createdCityA.addRoute(toB).addRoute(toC).addRoute(toD).addRoute(toE).addRoute(toB2).addRoute(toB3);
+         cityRepository.saveRoute(createdCityA);
+
+         Optional<Neo4jCity> secondSave = cityRepository.findByIdFetchRoutes(createdCityA.getId());
+         log.info(secondSave);
+
+         Map<String, String> cityCriteriaPreferences = Map.of(
+                 CityCriteria.FOOD.name(), "3",
+                 CityCriteria.NIGHTLIFE.name(), "3",
+                 CityCriteria.SAILING.name(), "3"
+         );
+         int costPreference = 2;
+         Set<Neo4jRoute> allRoutesOrdered = cityRepository.fetchRoutesByTargetCityCountryIdOrderByPreferences(createdCityA.getId(), createdCityA.getCountry().getId(), cityCriteriaPreferences, costPreference);
+         log.info(allRoutesOrdered);
+
+
+     }
 
     
 
