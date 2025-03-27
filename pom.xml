@@ -103,6 +103,15 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
 		</plugins>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<argLine>-Dspring.profiles.active=maven</argLine>
+				</configuration>
+			</plugin>
+		</plugins>
 	</build>
 
 	<!-- Silly but below is a github PAT token classic (with JUST package:read) which has been XML encoded so that Github doest auto remove it -->
