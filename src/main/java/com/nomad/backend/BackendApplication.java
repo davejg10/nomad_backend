@@ -18,6 +18,8 @@ public class BackendApplication {
 		Environment environment = SpringApplication.run(BackendApplication.class, args).getEnvironment();
 
 		String profile = environment.getProperty("spring.profiles.active", "local");
+		
+		log.info("Profile is: {}", profile);
 
 		if (!Objects.equals(profile, "local")) {
 			log.info("Attaching application insights");

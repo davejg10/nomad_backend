@@ -22,6 +22,20 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>com.nomad.multi</groupId>
+			<artifactId>data_library</artifactId>
+			<version>${version.nomad.data_library}</version>
+		</dependency>
+		<!-- This brings in our Neo4jTestConfigurationClass but only when testing  -->
+		<dependency> 
+			<groupId>com.nomad.multi</groupId>
+			<artifactId>data_library</artifactId>
+			<version>${version.nomad.data_library}</version>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 			<!-- Exclude this as we want to use log4j -->
@@ -39,20 +53,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>com.nomad.multi</groupId>
-			<artifactId>data_library</artifactId>
-			<version>${version.nomad.data_library}</version>
-		</dependency>
-		<!-- This brings in our Neo4jTestConfigurationClass but only when testing  -->
-		<dependency> 
-			<groupId>com.nomad.multi</groupId>
-			<artifactId>data_library</artifactId>
-			<version>${version.nomad.data_library}</version>
-			<type>test-jar</type>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-neo4j</artifactId>
 		</dependency>
@@ -67,7 +67,7 @@
 			<artifactId>postgresql</artifactId>
 			<scope>runtime</scope>
 		</dependency>
-		
+
 		<!-- Used for Application insights in cloud -->
 		<dependency>
 			<groupId>com.microsoft.azure</groupId>
