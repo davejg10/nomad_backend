@@ -36,6 +36,7 @@ public class SqlRouteInstanceService {
         log.info("Fetched all route instances with searchDate: {}, for the following routeDefinitionIds: {}", searchDate, routeDefinitionIds);
 
         List<RouteInstance> routeInstances = sqlRouteInstanceRepository.findByRouteDefinitionIdInAndSearchDate(routeDefinitionIds, searchDate);
+        log.info("All route instances findAll() are: {}", sqlRouteInstanceRepository.findAll());
 
         if (routeInstances.isEmpty()) {
             log.warn("Route instances for given date {} could not be found.");

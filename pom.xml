@@ -67,7 +67,7 @@
 			<artifactId>postgresql</artifactId>
 			<scope>runtime</scope>
 		</dependency>
-
+		
 		<!-- Used for Application insights in cloud -->
 		<dependency>
 			<groupId>com.microsoft.azure</groupId>
