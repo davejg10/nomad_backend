@@ -19,8 +19,6 @@ public class BackendApplication {
 
 		String profile = environment.getProperty("spring.profiles.active", "local");
 		
-		log.info("Profile is: {}", profile);
-
 		if (!Objects.equals(profile, "local")) {
 			log.info("Attaching application insights");
 			// Note; the application insights connection string is set as `APPLICATIONINSIGHTS_CONNECTION_STRING` environment variable.

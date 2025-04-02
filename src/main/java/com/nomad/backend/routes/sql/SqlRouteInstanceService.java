@@ -50,7 +50,6 @@ public class SqlRouteInstanceService {
                     throw new NotFoundRequestException("Route instances not found");
                 }
             }
-        
             return Optional.empty();    
         }
         

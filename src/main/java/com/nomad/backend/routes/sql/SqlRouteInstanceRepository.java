@@ -9,7 +9,6 @@ import org.springframework.stereotype.Repository;
 
 import com.nomad.data_library.domain.sql.RouteInstance;
 
-
 @Repository
 public interface SqlRouteInstanceRepository extends CrudRepository<RouteInstance, UUID>{
     

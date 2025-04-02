@@ -1,0 +1,23 @@
+spring:
+    datasource:
+        url: ${POSTGRES_URI}
+        username: ${WEB_APP_MANAGED_IDENTITY_PRINCIPAL_NAME}
+        azure:
+            passwordless-enabled: true
+    cloud:
+        azure:
+            credential:
+                managed-identity-enabled: true
+                client-id: ${AZURE_CLIENT_ID}
+    jpa:
+        properties:
+            hibernate:
+                dialect: org.hibernate.dialect.PostgreSQLDialect
+    neo4j:
+        uri: ${NEO4J_URI}
+        authentication:
+            username: ${NEO4J_USER}
+            password: ${NEO4J_PASSWORD}
+
+logging:
+    config: classpath:log4j2-cloud.xml

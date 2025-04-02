@@ -1,6 +1,5 @@
 package com.nomad.backend.city.neo4j;
 
-import com.nomad.data_library.domain.CityCriteria;
 import com.nomad.data_library.domain.neo4j.Neo4jCity;
 import com.nomad.data_library.domain.neo4j.Neo4jRoute;
 import com.nomad.backend.exceptions.NotFoundRequestException;
