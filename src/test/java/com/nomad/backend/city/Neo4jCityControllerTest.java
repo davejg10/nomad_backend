@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nomad.backend.city.neo4j.Neo4jCityController;
 import com.nomad.backend.city.neo4j.Neo4jCityService;
 import com.nomad.backend.exceptions.NotFoundRequestException;
-import com.nomad.data_library.GenericTestGenerator;
+import com.nomad.backend.logging.LoggingService;
 import com.nomad.data_library.Neo4jTestGenerator;
 import com.nomad.data_library.domain.neo4j.Neo4jCity;
 import com.nomad.data_library.domain.neo4j.Neo4jCountry;
@@ -17,7 +17,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-import java.util.Set;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -31,6 +30,9 @@ public class Neo4jCityControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @MockitoBean
+    private LoggingService loggingService;
 
     @Autowired
     private ObjectMapper objectMapper;
