@@ -8,28 +8,33 @@
 		<version>3.4.1</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
+
 	<groupId>com.nomad</groupId>
 	<artifactId>backend</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>backend</name>
 	<description>Nomad Java backend</description>
-	<url/>
-	<licenses>
-		<license/>
-	</licenses>
-	<developers>
-		<developer/>
-	</developers>
-	<scm>
-		<connection/>
-		<developerConnection/>
-		<tag/>
-		<url/>
-	</scm>
+
 	<properties>
-		<java.version>21</java.version>
+		<java.version>17</java.version>
+		<version.nomad.data_library>1.0-SNAPSHOT</version.nomad.data_library>
 	</properties>
+
 	<dependencies>
+		<dependency>
+			<groupId>com.nomad.multi</groupId>
+			<artifactId>data_library</artifactId>
+			<version>${version.nomad.data_library}</version>
+		</dependency>
+		<!-- This brings in our Neo4jTestConfigurationClass but only when testing  -->
+		<dependency> 
+			<groupId>com.nomad.multi</groupId>
+			<artifactId>data_library</artifactId>
+			<version>${version.nomad.data_library}</version>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
@@ -55,6 +60,12 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-log4j2</artifactId>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<scope>runtime</scope>
 		</dependency>
 
 		<!-- Used for Application insights in cloud -->
@@ -91,7 +102,24 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<argLine>-Dspring.profiles.active=maven</argLine>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
+
+	<!-- Silly but below is a github PAT token classic (with JUST package:read) which has been XML encoded so that Github doest auto remove it -->
+	<!-- This allows us to read our custom Maven packages deployed to nomad-data-services	-->
+	<!-- For more see https://github.com/orgs/community/discussions/26634 -->
+	<repositories>
+		<repository>
+			<id>github-public</id>
+			<url>https://public:&#103;hp_gBpZlHAMkePnrR5oSpqyfQucge8qSk1kNU0L@maven.pkg.github.com/davejg10/*</url>
+		</repository>
+	</repositories>
 
 </project>

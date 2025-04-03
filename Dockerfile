@@ -5,7 +5,7 @@ COPY pom.xml .
 COPY src ./src
 
 # Build the application
-RUN mvn clean package -DskipTests
+RUN mvn clean package
 
 FROM amazoncorretto:21-alpine-jdk
 WORKDIR /app

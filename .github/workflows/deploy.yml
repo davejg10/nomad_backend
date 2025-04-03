@@ -19,7 +19,7 @@ permissions:
 
 jobs:
   deploy_to_web_app:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         environment: [ dev ]
