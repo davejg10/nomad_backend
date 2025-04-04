@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
 import com.nomad.data_library.domain.sql.RouteInstance;
 
 @Repository
-public interface SqlRouteInstanceRepository extends CrudRepository<RouteInstance, UUID>{
+public interface RouteInstanceRepository extends CrudRepository<RouteInstance, UUID>{
     
     List<RouteInstance> findByRouteDefinitionIdInAndSearchDate(List<UUID> routeDefinitionIds, LocalDate searchDate);
 }

@@ -1,8 +1,6 @@
 package com.nomad.backend.city.neo4j;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nomad.backend.country.neo4j.Neo4jCountryMappers;
 import com.nomad.common_utils.domain.TransportType;
 import com.nomad.data_library.domain.CityCriteria;
 import com.nomad.data_library.domain.CityMetric;
@@ -18,14 +16,10 @@ import org.neo4j.driver.Value;
 import org.neo4j.driver.types.TypeSystem;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.neo4j.core.Neo4jClient;
-import org.springframework.data.neo4j.core.schema.Node;
 
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.*;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Log4j2
 @Configuration
