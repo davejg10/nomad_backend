@@ -22,20 +22,20 @@ import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 @Service
-public class SqlRouteInstanceService {
+public class RouteInstanceService {
 
-    private final SqlRouteInstanceRepository sqlRouteInstanceRepository;
+    private final RouteInstanceRepository routeInstanceRepository;
     private final ObjectMapper objectMapper;
     
-    public SqlRouteInstanceService(SqlRouteInstanceRepository sqlRouteInstanceRepository, ObjectMapper objectMapper) {
-        this.sqlRouteInstanceRepository = sqlRouteInstanceRepository;
+    public RouteInstanceService(RouteInstanceRepository routeInstanceRepository, ObjectMapper objectMapper) {
+        this.routeInstanceRepository = routeInstanceRepository;
         this.objectMapper = objectMapper;
     }
 
     Optional<List<RouteInstance>> findByRouteDefinitionIdInAndSearchDate(CityDTO sourceCity, CityDTO targetCity, List<UUID> routeDefinitionIds, LocalDate searchDate, int attempt) {
         log.info("Fetched all route instances with searchDate: {}, for the following routeDefinitionIds: {}", searchDate, routeDefinitionIds);
 
-        List<RouteInstance> routeInstances = sqlRouteInstanceRepository.findByRouteDefinitionIdInAndSearchDate(routeDefinitionIds, searchDate);
+        List<RouteInstance> routeInstances = routeInstanceRepository.findByRouteDefinitionIdInAndSearchDate(routeDefinitionIds, searchDate);
 
         if (routeInstances.isEmpty()) {
             log.warn("Route instances for given date {} could not be found.");

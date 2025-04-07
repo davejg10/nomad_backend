@@ -17,12 +17,12 @@ import com.nomad.data_library.domain.sql.RouteInstance;
 
 @RestController
 @RequestMapping("/route-instances")
-public class SqlRouteInstanceController {
+public class RouteInstanceController {
 
-    private final SqlRouteInstanceService sqlRouteInstanceService;
+    private final RouteInstanceService routeInstanceService;
 
-    public SqlRouteInstanceController(SqlRouteInstanceService sqlRouteInstanceService) {
-        this.sqlRouteInstanceService = sqlRouteInstanceService;
+    public RouteInstanceController(RouteInstanceService routeInstanceService) {
+        this.routeInstanceService = routeInstanceService;
     }
     
     @GetMapping()
@@ -37,7 +37,7 @@ public class SqlRouteInstanceController {
         CityDTO sourceCity = new CityDTO(sourceCityId, sourceCityName);
         CityDTO targetCity = new CityDTO(targetCityId, targetCityName);
 
-        Optional<List<RouteInstance>> routeInstances = sqlRouteInstanceService.findByRouteDefinitionIdInAndSearchDate(sourceCity, targetCity, routeDefinitionIds, searchDate, attempt);
+        Optional<List<RouteInstance>> routeInstances = routeInstanceService.findByRouteDefinitionIdInAndSearchDate(sourceCity, targetCity, routeDefinitionIds, searchDate, attempt);
 
         if (routeInstances.isPresent()) {
             return ResponseEntity.status(HttpStatus.OK).body(routeInstances.get());
