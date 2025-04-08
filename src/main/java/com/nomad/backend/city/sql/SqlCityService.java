@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 
 import com.nomad.backend.exceptions.NotFoundRequestException;
 import com.nomad.data_library.domain.sql.SqlCity;
-import com.nomad.data_library.repositories.SqlCityRepository;
 
 import lombok.extern.log4j.Log4j2;
 
