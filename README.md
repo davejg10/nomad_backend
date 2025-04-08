@@ -45,6 +45,17 @@ You will need a Neo4j container running locally.
 docker run --publish=7474:7474 --publish=7687:7687 -e 'NEO4J_AUTH=neo4j/mypassword' neo4j:5
 ```
 
+and a Postgres SQL container running locally
+
+```
+docker run -p 5432:5432 -e POSTGRES_USER=myuser -e POSTGRES_PASSWORD=mypassword mydatabase
+```
+
+Then you will need to run the PSQL script named `01_setup_db.sql` in the `nomad_infra` repo under `cac/sql` against this database to create the schema.
+```
+psql -h localhost -U myuser -d mydatabase -f 01_setup_db.sql
+```
+
 # Getting logs
 
 All logs are exported to Log Analytics Workspace under the `AppTraces` table

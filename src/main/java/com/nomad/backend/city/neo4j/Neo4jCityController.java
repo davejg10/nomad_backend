@@ -9,7 +9,6 @@ import java.util.Set;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.nomad.data_library.domain.CityCriteria;
 
 @RestController
 @RequestMapping("/neo4jCities")
