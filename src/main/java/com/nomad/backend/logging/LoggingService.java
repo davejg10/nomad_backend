@@ -51,7 +51,8 @@ public class LoggingService {
         char statusDigit = Integer.toString(response.getStatus()).charAt(0);
         switch (statusDigit) {
             case '2':
-                log.info("logResponse: {}",respMessage);
+                log.info("logResponse: [{}] [{}], Not posting body as too long.", request.getMethod(), response.getStatus());
+                log.trace("logResponse: {}",respMessage);
                 break;
             case '3':
                 break;
