@@ -82,7 +82,7 @@ public class Neo4jCityRepository extends Neo4jCommonCityRepository {
             
                     MATCH (city)-[route:ROUTE]->(targetCity)
             
-                    WITH city, route
+                    WITH city, route, targetCity
                     MATCH (targetCity) -[:OF_COUNTRY]-> (targetCityCountry:Country {id: $targetCityCountryId})
             
                     WITH route, targetCity, targetCityCountry, round(point.distance(city.coordinate, targetCity.coordinate)) / 1000 as distance
