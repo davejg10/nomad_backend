@@ -1,7 +1,7 @@
 package com.nomad.backend.city.neo4j;
 
+import com.nomad.backend.domain.RouteInfoDTO;
 import com.nomad.data_library.domain.neo4j.Neo4jCity;
-import com.nomad.data_library.domain.neo4j.Neo4jRoute;
 
 import java.util.Map;
 import java.util.Set;
@@ -39,7 +39,7 @@ public class Neo4jCityController {
     }
     
     @GetMapping("/{id}/routes/preferences")
-    public ResponseEntity<Set<Neo4jRoute>> fetchRoutesByTargetCityCountryIdOrderByPreferences(
+    public ResponseEntity<Set<RouteInfoDTO>> fetchRoutesByTargetCityCountryIdOrderByPreferences(
             @PathVariable String id,
             @RequestParam String targetCityCountryId,
             @RequestParam Map<String, String> cityCriteriaPreferences,

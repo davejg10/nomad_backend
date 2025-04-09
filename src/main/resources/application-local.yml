@@ -1,3 +1,6 @@
+app_settings:
+    fa_job_orchestrator_url: http://localhost:7072/api/apiJobProducer
+
 spring:
     datasource:
         url: jdbc:postgresql://localhost:5432/mydatabase

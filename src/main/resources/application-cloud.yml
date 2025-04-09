@@ -1,3 +1,6 @@
+app_settings:
+    fa_job_orchestrator_url: https://fa-${ENVIRONMENT}-uks-nomad-02-job-orchestrator.azurewebsites.net/api/apiJobProducer
+
 spring:
     datasource:
         url: ${POSTGRES_URI}

@@ -2,6 +2,7 @@ package com.nomad.backend.city.neo4j;
 
 import com.nomad.data_library.domain.neo4j.Neo4jCity;
 import com.nomad.data_library.domain.neo4j.Neo4jRoute;
+import com.nomad.backend.domain.RouteInfoDTO;
 import com.nomad.backend.exceptions.NotFoundRequestException;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
@@ -42,9 +43,9 @@ public class Neo4jCityService {
         }
     }
 
-    public Set<Neo4jRoute> fetchRoutesByTargetCityCountryIdOrderByPreferences(String id, String targetCityCountryId, Map<String, String> cityCriteriaPreferences, int costPreference) throws NotFoundRequestException {
+    public Set<RouteInfoDTO> fetchRoutesByTargetCityCountryIdOrderByPreferences(String id, String targetCityCountryId, Map<String, String> cityCriteriaPreferences, int costPreference) throws NotFoundRequestException {
         log.info("Fetching Neo4jCity with ID {}, only including routes with cities of Neo4jCountry ID: {}. Returning set of routes ordered by preferences.", id, targetCityCountryId);
-        Set<Neo4jRoute> orderedRoutes = neo4jCityRepository.fetchRoutesByTargetCityCountryIdOrderByPreferences(id, targetCityCountryId, cityCriteriaPreferences, costPreference);
+        Set<RouteInfoDTO> orderedRoutes = neo4jCityRepository.fetchRoutesByTargetCityCountryIdOrderByPreferences(id, targetCityCountryId, cityCriteriaPreferences, costPreference);
         if (orderedRoutes.isEmpty()) {
             log.warn("There are no routes for city with Id: {}, with targetCityCountryId: {}. Returning empty set.", id, targetCityCountryId);
         }

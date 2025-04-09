@@ -5,6 +5,7 @@ import com.nomad.backend.TestConfig;
 import com.nomad.backend.city.neo4j.Neo4jCityMappers;
 import com.nomad.backend.city.neo4j.Neo4jCityRepository;
 import com.nomad.backend.country.neo4j.Neo4jCountryRepository;
+import com.nomad.backend.domain.RouteInfoDTO;
 import com.nomad.data_library.Neo4jTestConfiguration;
 import com.nomad.data_library.Neo4jTestGenerator;
 import com.nomad.data_library.config.Neo4jConfig;
@@ -180,7 +181,7 @@ public class Neo4jCityRepositoryTest {
                  CityCriteria.SAILING.name(), "3"
          );
          int costPreference = 2;
-         Set<Neo4jRoute> allRoutesOrdered = cityRepository.fetchRoutesByTargetCityCountryIdOrderByPreferences(createdCityA.getId(), createdCityA.getCountry().getId(), cityCriteriaPreferences, costPreference);
+         Set<RouteInfoDTO> allRoutesOrdered = cityRepository.fetchRoutesByTargetCityCountryIdOrderByPreferences(createdCityA.getId(), createdCityA.getCountry().getId(), cityCriteriaPreferences, costPreference);
          log.info(allRoutesOrdered);
 
 

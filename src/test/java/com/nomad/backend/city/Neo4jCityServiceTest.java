@@ -69,7 +69,6 @@ public class Neo4jCityServiceTest {
         Throwable exception = assertThrows(NotFoundRequestException.class, () -> cityService.findById(cityAId, false));
         Mockito.when(cityRepository.findByIdFetchRoutes(cityAId)).thenReturn(Optional.empty());
         exception = assertThrows(NotFoundRequestException.class, () -> cityService.findById(cityAId, true));
-
     }
 
 

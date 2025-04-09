@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,10 +27,15 @@ public class RouteInstanceService {
 
     private final RouteInstanceRepository routeInstanceRepository;
     private final ObjectMapper objectMapper;
+    private final String faJobOrchestratorUrl;
     
-    public RouteInstanceService(RouteInstanceRepository routeInstanceRepository, ObjectMapper objectMapper) {
+    public RouteInstanceService(
+            RouteInstanceRepository routeInstanceRepository,
+            ObjectMapper objectMapper,
+            @Value("${app_settings.fa_job_orchestrator_url}") String faJobOrchestratorUrl) {
         this.routeInstanceRepository = routeInstanceRepository;
         this.objectMapper = objectMapper;
+        this.faJobOrchestratorUrl = faJobOrchestratorUrl;
     }
 
     Optional<List<RouteInstance>> findByRouteDefinitionIdInAndSearchDate(CityDTO sourceCity, CityDTO targetCity, List<UUID> routeDefinitionIds, LocalDate searchDate, int attempt) {
@@ -59,8 +65,6 @@ public class RouteInstanceService {
 
 
     void requestScrape(CityDTO sourceCity, CityDTO targetCity, LocalDate searchDate) throws IOException, InterruptedException {
-        // String url = "http://localhost:7072/api/apiJobProducer";
-        String url = "https://fa-dev-uks-nomad-02-job-orchestrator.azurewebsites.net/api/apiJobProducer";
         HttpClient httpClient = HttpClient.newHttpClient();
 
         ApiJobProducerRequest requestBody = new ApiJobProducerRequest(sourceCity, targetCity, searchDate);
@@ -70,7 +74,7 @@ public class RouteInstanceService {
         String jsonRequest = objectMapper.writeValueAsString(requestBody);
 
         HttpRequest httpRequest = HttpRequest.newBuilder()
-            .uri(URI.create(url))
+            .uri(URI.create(faJobOrchestratorUrl))
             .header("Content-Type", "application/json")
             .POST(HttpRequest.BodyPublishers.ofString(jsonRequest))
             .build();
