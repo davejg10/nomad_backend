@@ -93,6 +93,4 @@ public class Neo4jCityControllerTest {
                 .andExpect(content().string("City not found"))
                 .andReturn();
     }
-
-
 }

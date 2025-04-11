@@ -73,7 +73,7 @@ public class Neo4jCityRepository extends Neo4jCommonCityRepository {
         return findById(id);
     }
 
-    public Set<RouteInfoDTO> fetchRoutesByTargetCityCountryIdOrderByPreferences(String id, String targetCityCountryId, Map<String, String> cityCriteriaPreferences, int costPreference) {
+    public Set<RouteInfoDTO> fetchRoutesByTargetCityCountryIdsOrderByPreferences(String id, Set<String> targetCityCountryIds, Map<String, String> cityCriteriaPreferences, int costPreference) {
         List<RouteInfoDTO> results = neo4jClient
                 .query("""
                     MATCH (city:City {id: $id})
@@ -83,7 +83,8 @@ public class Neo4jCityRepository extends Neo4jCommonCityRepository {
                     MATCH (city)-[route:ROUTE]->(targetCity)
             
                     WITH city, route, targetCity
-                    MATCH (targetCity) -[:OF_COUNTRY]-> (targetCityCountry:Country {id: $targetCityCountryId})
+                    MATCH (targetCity) -[:OF_COUNTRY]-> (targetCityCountry:Country)
+                    WHERE targetCityCountry IN $targetCityCountryIds
             
                     WITH route, targetCity, targetCityCountry, round(point.distance(city.coordinate, targetCity.coordinate)) / 1000 as distance
                     MATCH (targetCity)-[:HAS_METRIC]->(targetCityMetric:Metric)
@@ -115,7 +116,7 @@ public class Neo4jCityRepository extends Neo4jCommonCityRepository {
                     RETURN route, targetCity, targetCityCountry, distance, targetCityMetrics, totalScore, attributeScore, costPenalty
                 """)
                 .bind(id).to("id")
-                .bind(targetCityCountryId).to("targetCityCountryId")
+                .bind(targetCityCountryIds).to("targetCityCountryIds")
                 .bind(Integer.parseInt(cityCriteriaPreferences.get(CityCriteria.FOOD.name()))).to("foodPreference")
                 .bind(Integer.parseInt(cityCriteriaPreferences.get(CityCriteria.NIGHTLIFE.name()))).to("nightlifePreference")
                 .bind(Integer.parseInt(cityCriteriaPreferences.get(CityCriteria.SAILING.name()))).to("sailingPreference")

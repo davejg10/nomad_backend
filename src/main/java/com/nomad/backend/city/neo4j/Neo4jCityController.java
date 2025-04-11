@@ -39,13 +39,13 @@ public class Neo4jCityController {
     }
     
     @GetMapping("/{id}/routes/preferences")
-    public ResponseEntity<Set<RouteInfoDTO>> fetchRoutesByTargetCityCountryIdOrderByPreferences(
+    public ResponseEntity<Set<RouteInfoDTO>> fetchRoutesByTargetCityCountryIdsOrderByPreferences(
             @PathVariable String id,
-            @RequestParam String targetCityCountryId,
+            @RequestParam String targetCityCountryIds,
             @RequestParam Map<String, String> cityCriteriaPreferences,
             @RequestParam int costPreference) {
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(neo4jCityService.fetchRoutesByTargetCityCountryIdOrderByPreferences(id, targetCityCountryId, cityCriteriaPreferences, costPreference));
+                .body(neo4jCityService.fetchRoutesByTargetCityCountryIdsOrderByPreferences(id, targetCityCountryIds, cityCriteriaPreferences, costPreference));
     }
 }

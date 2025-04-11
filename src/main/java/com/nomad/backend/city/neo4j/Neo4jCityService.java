@@ -8,6 +8,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Log4j2
@@ -43,11 +44,13 @@ public class Neo4jCityService {
         }
     }
 
-    public Set<RouteInfoDTO> fetchRoutesByTargetCityCountryIdOrderByPreferences(String id, String targetCityCountryId, Map<String, String> cityCriteriaPreferences, int costPreference) throws NotFoundRequestException {
-        log.info("Fetching Neo4jCity with ID {}, only including routes with cities of Neo4jCountry ID: {}. Returning set of routes ordered by preferences.", id, targetCityCountryId);
-        Set<RouteInfoDTO> orderedRoutes = neo4jCityRepository.fetchRoutesByTargetCityCountryIdOrderByPreferences(id, targetCityCountryId, cityCriteriaPreferences, costPreference);
+    public Set<RouteInfoDTO> fetchRoutesByTargetCityCountryIdsOrderByPreferences(String id, String selectedCountriesIds, Map<String, String> cityCriteriaPreferences, int costPreference) throws NotFoundRequestException {
+        Set<String> targetCityCountryIds = Set.of(selectedCountriesIds.split(","));
+        log.info("Fetching Neo4jCity with ID {}, only including routes with cities in the following Neo4jCountries: {}. Returning set of routes ordered by preferences.", id, targetCityCountryIds);
+
+        Set<RouteInfoDTO> orderedRoutes = neo4jCityRepository.fetchRoutesByTargetCityCountryIdsOrderByPreferences(id, targetCityCountryIds, cityCriteriaPreferences, costPreference);
         if (orderedRoutes.isEmpty()) {
-            log.warn("There are no routes for city with Id: {}, with targetCityCountryId: {}. Returning empty set.", id, targetCityCountryId);
+            log.warn("There are no routes for city with Id: {}, with targetCityCountryIds: {}. Returning empty set.", id, targetCityCountryIds);
         }
         return orderedRoutes;
 

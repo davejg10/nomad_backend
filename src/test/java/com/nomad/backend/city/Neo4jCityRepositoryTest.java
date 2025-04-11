@@ -154,7 +154,7 @@ public class Neo4jCityRepositoryTest {
      void findByIdAndCountryIdOrderByPreferences_shouldReturnCityWithRoutesInOrder() {
          Neo4jCity cityC = Neo4jTestGenerator.neo4jCityNoRoutes("CityC", countryA);
          Neo4jCity cityD = Neo4jTestGenerator.neo4jCityNoRoutes("CityD", countryA);
-         Neo4jCity cityE = Neo4jTestGenerator.neo4jCityNoRoutes("CityE", countryA);
+         Neo4jCity cityE = Neo4jTestGenerator.neo4jCityNoRoutes("CityE", countryB);
 
          Neo4jCity createdCityA = cityRepository.createCity(cityA);
          cityRepository.createCity(cityB);
@@ -181,7 +181,7 @@ public class Neo4jCityRepositoryTest {
                  CityCriteria.SAILING.name(), "3"
          );
          int costPreference = 2;
-         Set<RouteInfoDTO> allRoutesOrdered = cityRepository.fetchRoutesByTargetCityCountryIdOrderByPreferences(createdCityA.getId(), createdCityA.getCountry().getId(), cityCriteriaPreferences, costPreference);
+         Set<RouteInfoDTO> allRoutesOrdered = cityRepository.fetchRoutesByTargetCityCountryIdsOrderByPreferences(createdCityA.getId(), Set.of(countryA.getId(), countryB.getId()), cityCriteriaPreferences, costPreference);
          log.info(allRoutesOrdered);
 
 
