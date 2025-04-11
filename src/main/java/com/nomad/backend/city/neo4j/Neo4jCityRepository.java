@@ -1,6 +1,7 @@
 package com.nomad.backend.city.neo4j;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nomad.backend.domain.CityInfoDTO;
 import com.nomad.backend.domain.RouteInfoDTO;
 import com.nomad.common_utils.domain.TransportType;
 import com.nomad.data_library.domain.CityCriteria;
@@ -73,7 +74,59 @@ public class Neo4jCityRepository extends Neo4jCommonCityRepository {
         return findById(id);
     }
 
-    public Set<RouteInfoDTO> fetchRoutesByTargetCityCountryIdsOrderByPreferences(String id, Set<String> targetCityCountryIds, Map<String, String> cityCriteriaPreferences, int costPreference) {
+    public Set<CityInfoDTO> fetchCitiesByCountryIdsOrderByPreferences(Set<String> selectedCountryIds, Map<String, String> cityCriteriaPreferences, int costPreference) {
+        List<CityInfoDTO> results = neo4jClient
+                .query("""
+                    MATCH (city:City)
+                    MATCH (city) -[:OF_COUNTRY]-> (country:Country)
+                    WHERE country IN $selectedCountryIds
+            
+                    WITH city, country
+                    MATCH (city)-[:HAS_METRIC]->(cityMetric:Metric)
+            
+                    WITH city,  country, collect(cityMetric) as cityMetrics
+            
+                    WITH city, country, cityMetrics,
+                    REDUCE(sum = 0, m IN cityMetrics | sum +
+                            CASE m.criteria
+                                WHEN 'FOOD' THEN m.metric * ($foodPreference/3)
+                                WHEN 'NIGHTLIFE' THEN m.metric * ($nightlifePreference/3)
+                                WHEN 'SAILING' THEN m.metric * ($sailingPreference/3)
+                                ELSE 0
+                    END) AS attributeScore
+            
+                    WITH city, country, cityMetrics, attributeScore as totalScore
+                        
+                    WITH city, country, cityMetrics, totalScore
+                    ORDER BY totalScore DESC
+      
+                    RETURN city, country, cityMetrics, totalScore
+                """)
+                .bind(selectedCountryIds).to("selectedCountryIds")
+                .bind(Integer.parseInt(cityCriteriaPreferences.get(CityCriteria.FOOD.name()))).to("foodPreference")
+                .bind(Integer.parseInt(cityCriteriaPreferences.get(CityCriteria.NIGHTLIFE.name()))).to("nightlifePreference")
+                .bind(Integer.parseInt(cityCriteriaPreferences.get(CityCriteria.SAILING.name()))).to("sailingPreference")
+                .bind(costPreference).to("costPreference")
+                .fetchAs(CityInfoDTO.class)
+                .mappedBy((TypeSystem typeSystem, Record record) -> {
+
+                    Neo4jCountry country = neo4jCityMappers.countryMapper.apply(typeSystem, record.get("country"));
+                    Neo4jCity city = neo4jCityMappers.cityMapper.apply(typeSystem, record.get("city"));
+                    Set<CityMetric> cityMetrics = new HashSet<>(record.get("cityMetrics").asList(cityMetric -> new CityMetric(
+                            CityCriteria.valueOf(cityMetric.get("criteria").asString()),
+                            cityMetric.get("metric").asDouble()
+                    )));
+
+                    city = city.withCountry(country).withCityMetrics(cityMetrics);
+
+                    return new CityInfoDTO(city, record.get("totalScore").asDouble());
+                })
+                .all().stream().toList();
+
+        return new LinkedHashSet<>(results);
+    }
+
+    public Set<RouteInfoDTO> fetchRoutesByCityIdAndCountryIdsOrderByPreferences(String id, Set<String> selectedCountryIds, Map<String, String> cityCriteriaPreferences, int costPreference) {
         List<RouteInfoDTO> results = neo4jClient
                 .query("""
                     MATCH (city:City {id: $id})
@@ -84,7 +137,7 @@ public class Neo4jCityRepository extends Neo4jCommonCityRepository {
             
                     WITH city, route, targetCity
                     MATCH (targetCity) -[:OF_COUNTRY]-> (targetCityCountry:Country)
-                    WHERE targetCityCountry IN $targetCityCountryIds
+                    WHERE targetCityCountry IN $selectedCountryIds
             
                     WITH route, targetCity, targetCityCountry, round(point.distance(city.coordinate, targetCity.coordinate)) / 1000 as distance
                     MATCH (targetCity)-[:HAS_METRIC]->(targetCityMetric:Metric)
@@ -116,7 +169,7 @@ public class Neo4jCityRepository extends Neo4jCommonCityRepository {
                     RETURN route, targetCity, targetCityCountry, distance, targetCityMetrics, totalScore, attributeScore, costPenalty
                 """)
                 .bind(id).to("id")
-                .bind(targetCityCountryIds).to("targetCityCountryIds")
+                .bind(selectedCountryIds).to("selectedCountryIds")
                 .bind(Integer.parseInt(cityCriteriaPreferences.get(CityCriteria.FOOD.name()))).to("foodPreference")
                 .bind(Integer.parseInt(cityCriteriaPreferences.get(CityCriteria.NIGHTLIFE.name()))).to("nightlifePreference")
                 .bind(Integer.parseInt(cityCriteriaPreferences.get(CityCriteria.SAILING.name()))).to("sailingPreference")
@@ -146,8 +199,6 @@ public class Neo4jCityRepository extends Neo4jCommonCityRepository {
                     log.info("TargetCity: {}, TransportType: {}, score: {}, attributeScore: {}, costPenalty: {}", targetCity.getName(), theRoute.getTransportType(), record.get("totalScore"), record.get("attributeScore"), record.get("costPenalty"));
 
                     return new RouteInfoDTO(theRoute, record.get("totalScore").asDouble(), record.get("distance").asDouble());
-                    // return theRoute;
-
                 })
                 .all().stream().toList();
 

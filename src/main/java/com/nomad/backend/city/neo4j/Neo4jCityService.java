@@ -2,6 +2,7 @@ package com.nomad.backend.city.neo4j;
 
 import com.nomad.data_library.domain.neo4j.Neo4jCity;
 import com.nomad.data_library.domain.neo4j.Neo4jRoute;
+import com.nomad.backend.domain.CityInfoDTO;
 import com.nomad.backend.domain.RouteInfoDTO;
 import com.nomad.backend.exceptions.NotFoundRequestException;
 import lombok.extern.log4j.Log4j2;
@@ -44,13 +45,25 @@ public class Neo4jCityService {
         }
     }
 
-    public Set<RouteInfoDTO> fetchRoutesByTargetCityCountryIdsOrderByPreferences(String id, String selectedCountriesIds, Map<String, String> cityCriteriaPreferences, int costPreference) throws NotFoundRequestException {
+    public Set<CityInfoDTO> fetchCitiesByCountryIdsOrderByPreferences(String selectedCountriesIds, Map<String, String> cityCriteriaPreferences, int costPreference) throws NotFoundRequestException {
         Set<String> targetCityCountryIds = Set.of(selectedCountriesIds.split(","));
-        log.info("Fetching Neo4jCity with ID {}, only including routes with cities in the following Neo4jCountries: {}. Returning set of routes ordered by preferences.", id, targetCityCountryIds);
+        log.info("Fetching all Neo4jCities in the following Neo4jCountries: {}. Returning set of routes ordered by preferences.", targetCityCountryIds);
 
-        Set<RouteInfoDTO> orderedRoutes = neo4jCityRepository.fetchRoutesByTargetCityCountryIdsOrderByPreferences(id, targetCityCountryIds, cityCriteriaPreferences, costPreference);
+        Set<CityInfoDTO> orderedCities = neo4jCityRepository.fetchCitiesByCountryIdsOrderByPreferences(targetCityCountryIds, cityCriteriaPreferences, costPreference);
+        if (orderedCities.isEmpty()) {
+            log.warn("There were no cities found with selectedCountriesIds: {}. Returning empty set.", targetCityCountryIds);
+        }
+        return orderedCities;
+
+    }
+
+    public Set<RouteInfoDTO> fetchRoutesByCityIdAndCountryIdsOrderByPreferences(String id, String selectedCountriesIdsString, Map<String, String> cityCriteriaPreferences, int costPreference) throws NotFoundRequestException {
+        Set<String> selectedCountriesIds = Set.of(selectedCountriesIdsString.split(","));
+        log.info("Fetching Neo4jCity with ID {}, only including routes with cities in the following Neo4jCountries: {}. Returning set of routes ordered by preferences.", id, selectedCountriesIdsString);
+
+        Set<RouteInfoDTO> orderedRoutes = neo4jCityRepository.fetchRoutesByCityIdAndCountryIdsOrderByPreferences(id, selectedCountriesIds, cityCriteriaPreferences, costPreference);
         if (orderedRoutes.isEmpty()) {
-            log.warn("There are no routes for city with Id: {}, with targetCityCountryIds: {}. Returning empty set.", id, targetCityCountryIds);
+            log.warn("There are no routes for city with Id: {}, with selectedCountriesIds: {}. Returning empty set.", id, selectedCountriesIds);
         }
         return orderedRoutes;
 

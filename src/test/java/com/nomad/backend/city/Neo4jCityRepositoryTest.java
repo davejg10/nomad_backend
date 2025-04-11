@@ -181,7 +181,7 @@ public class Neo4jCityRepositoryTest {
                  CityCriteria.SAILING.name(), "3"
          );
          int costPreference = 2;
-         Set<RouteInfoDTO> allRoutesOrdered = cityRepository.fetchRoutesByTargetCityCountryIdsOrderByPreferences(createdCityA.getId(), Set.of(countryA.getId(), countryB.getId()), cityCriteriaPreferences, costPreference);
+         Set<RouteInfoDTO> allRoutesOrdered = cityRepository.fetchRoutesByCityIdAndCountryIdsOrderByPreferences(createdCityA.getId(), Set.of(countryA.getId(), countryB.getId()), cityCriteriaPreferences, costPreference);
          log.info(allRoutesOrdered);
 
 

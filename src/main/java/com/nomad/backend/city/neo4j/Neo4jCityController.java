@@ -1,5 +1,6 @@
 package com.nomad.backend.city.neo4j;
 
+import com.nomad.backend.domain.CityInfoDTO;
 import com.nomad.backend.domain.RouteInfoDTO;
 import com.nomad.data_library.domain.neo4j.Neo4jCity;
 
@@ -37,15 +38,25 @@ public class Neo4jCityController {
                 .status(HttpStatus.OK)
                 .body(neo4jCityService.findByIdFetchRoutesByTargetCityCountryId(id, targetCityCountryId));
     }
-    
-    @GetMapping("/{id}/routes/preferences")
-    public ResponseEntity<Set<RouteInfoDTO>> fetchRoutesByTargetCityCountryIdsOrderByPreferences(
-            @PathVariable String id,
-            @RequestParam String targetCityCountryIds,
+
+    @GetMapping("/routes/preferences")
+    public ResponseEntity<Set<CityInfoDTO>> fetchCitiesByCountryIdsOrderByPreferences(
+            @RequestParam String selectedCountryIds,
             @RequestParam Map<String, String> cityCriteriaPreferences,
             @RequestParam int costPreference) {
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(neo4jCityService.fetchRoutesByTargetCityCountryIdsOrderByPreferences(id, targetCityCountryIds, cityCriteriaPreferences, costPreference));
+                .body(neo4jCityService.fetchCitiesByCountryIdsOrderByPreferences(selectedCountryIds, cityCriteriaPreferences, costPreference));
+    }
+    
+    @GetMapping("/{id}/routes/preferences")
+    public ResponseEntity<Set<RouteInfoDTO>> fetchRoutesByCityIdAndCountryIdsOrderByPreferences(
+            @PathVariable String id,
+            @RequestParam String selectedCountryIds,
+            @RequestParam Map<String, String> cityCriteriaPreferences,
+            @RequestParam int costPreference) {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(neo4jCityService.fetchRoutesByCityIdAndCountryIdsOrderByPreferences(id, selectedCountryIds, cityCriteriaPreferences, costPreference));
     }
 }
