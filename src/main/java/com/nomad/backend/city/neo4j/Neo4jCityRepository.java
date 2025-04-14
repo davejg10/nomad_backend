@@ -79,7 +79,7 @@ public class Neo4jCityRepository extends Neo4jCommonCityRepository {
                 .query("""
                     MATCH (city:City)
                     MATCH (city) -[:OF_COUNTRY]-> (country:Country)
-                    WHERE country IN $selectedCountryIds
+                    WHERE country.id IN $selectedCountryIds
             
                     WITH city, country
                     MATCH (city)-[:HAS_METRIC]->(cityMetric:Metric)
@@ -137,7 +137,7 @@ public class Neo4jCityRepository extends Neo4jCommonCityRepository {
             
                     WITH city, route, targetCity
                     MATCH (targetCity) -[:OF_COUNTRY]-> (targetCityCountry:Country)
-                    WHERE targetCityCountry IN $selectedCountryIds
+                    WHERE targetCityCountry.id IN $selectedCountryIds
             
                     WITH route, targetCity, targetCityCountry, round(point.distance(city.coordinate, targetCity.coordinate)) / 1000 as distance
                     MATCH (targetCity)-[:HAS_METRIC]->(targetCityMetric:Metric)
