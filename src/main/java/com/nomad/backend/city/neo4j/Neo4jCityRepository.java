@@ -21,7 +21,6 @@ import org.neo4j.driver.types.TypeSystem;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.neo4j.core.Neo4jClient;
 
-import static com.nomad.data_library.repositories.Neo4jCommonCityRepository.QUERY_RETURN_ALL_RELATIONSHIPS;
 
 import java.math.BigDecimal;
 import java.time.Duration;
