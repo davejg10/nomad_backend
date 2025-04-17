@@ -67,9 +67,11 @@ public class Neo4jCityController {
             @PathVariable String id,
             @RequestParam String selectedCountryIds,
             @RequestParam Map<String, String> cityCriteriaPreferences,
-            @RequestParam int costPreference) {
+            @RequestParam int costPreference,
+            @RequestParam int maxHops,
+            @RequestParam int beamWidth) {
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(neo4jCityService.beamApproachBoy(id, selectedCountryIds, cityCriteriaPreferences, costPreference));
+                .body(neo4jCityService.beamApproachBoy(id, selectedCountryIds, cityCriteriaPreferences, costPreference, maxHops, beamWidth));
     }
 }

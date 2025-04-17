@@ -75,7 +75,14 @@ public class Neo4jCityService {
         return orderedRoutes;
     }
 
-    public List<Map<String, Object>> beamApproachBoy(String id, String selectedCountriesIdsString, Map<String, String> cityCriteriaPreferences, int costPreference) {
+    public List<Map<String, Object>> beamApproachBoy(
+        String id,
+        String selectedCountriesIdsString,
+        Map<String, String> cityCriteriaPreferences, 
+        int costPreference,
+        int maxHops,
+        int beamWidth
+        ) {
         Set<String> selectedCountriesIds = Set.of(selectedCountriesIdsString.split(","));
 
         Map<String, Object> initialScores = Map.of(
@@ -92,8 +99,6 @@ public class Neo4jCityService {
         );
         List<Map<String, Object>> currentBeam = List.of(initialPathState);
 
-        int maxHops = 3; // Or your desired max length
-        int beamWidth = 5; // Your desired beam width
 
         // Prepare parameters for the Cypher query
         Map<String, Object> params = new HashMap<>();
