@@ -4,6 +4,7 @@ import com.nomad.backend.domain.CityInfoDTO;
 import com.nomad.backend.domain.RouteInfoDTO;
 import com.nomad.data_library.domain.neo4j.Neo4jCity;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -39,6 +40,7 @@ public class Neo4jCityController {
                 .body(neo4jCityService.findByIdFetchRoutesByTargetCityCountryId(id, targetCityCountryId));
     }
 
+    //TODO refactor this 
     @GetMapping("/routes/preferences")
     public ResponseEntity<Set<CityInfoDTO>> fetchCitiesByCountryIdsOrderByPreferences(
             @RequestParam String selectedCountryIds,
@@ -58,5 +60,16 @@ public class Neo4jCityController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(neo4jCityService.fetchRoutesByCityIdAndCountryIdsOrderByPreferences(id, selectedCountryIds, cityCriteriaPreferences, costPreference));
+    }
+
+    @GetMapping("/{id}/beam")
+    public ResponseEntity<List<Map<String, Object>>> beamSearchWithPreferences(
+            @PathVariable String id,
+            @RequestParam String selectedCountryIds,
+            @RequestParam Map<String, String> cityCriteriaPreferences,
+            @RequestParam int costPreference) {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(neo4jCityService.beamApproachBoy(id, selectedCountryIds, cityCriteriaPreferences, costPreference));
     }
 }

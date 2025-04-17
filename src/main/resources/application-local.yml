@@ -24,3 +24,7 @@ spring:
 # Logger
 logging:
     config: classpath:log4j2-local.xml
+    level:
+        org.neo4j: ERROR
+        org.springframework.data.neo4j: ERROR
+        org.neo4j.ogm: ERROR
